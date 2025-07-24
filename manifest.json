@@ -1,0 +1,14 @@
+{
+    "manifest_version": 3,
+    "name": "Workday-consolidate",
+    "version": "1.0",
+    "description": "",
+    "content_scripts": [
+        {
+            "matches": ["*://*.myworkdayjobs.com/*"],
+            "js": ["content.js"],
+            "run-at": "document_idle"
+        }
+    ],
+    "permissions": ["storage"]
+}
