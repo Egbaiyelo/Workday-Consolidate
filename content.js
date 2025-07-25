@@ -1,4 +1,5 @@
 
+
 // Login
 
 //
@@ -9,7 +10,7 @@
 
 // Icon and name
 const targetIcon = document.createElement('span');
-targetIcon.className = "53a7ht";
+targetIcon.className = "css-53a7ht";
 
 const targetText = document.createElement('span');
 targetText.textContent = "Target";
@@ -34,12 +35,12 @@ barDivider.setAttribute('color', '#FFFFFF');
 barDivider.className = 'css-1c0okss';
 
 const targetButtonDiv = document.createElement('div');
-targetButtonDiv.setAttribute('data-automation-id', 'utilityButtonTarget'); 
+targetButtonDiv.setAttribute('data-automation-id', 'utilityButtonTarget');
 targetButtonDiv.className = "css-wjaruy";
 // targetButtonDiv.className = 'css-1c0okss';
 targetButtonDiv.append(targetButton);
 
-console.log(targetButtonDiv)
+console.log({ targetButtonDiv: targetButtonDiv })
 
 
 const observer = new MutationObserver(() => {
@@ -58,7 +59,45 @@ const observer = new MutationObserver(() => {
 
         utilityButtonBar.insertBefore(barDivider, null);
         utilityButtonBar.insertBefore(targetButtonDiv, null);
+        utilityButtonBar.insertBefore(barDivider, null);
     }
 })        
 
 observer.observe(document.body, {subtree: true, childList: true});
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const observer = new MutationObserver((mutations) => {
+//     for (const mutation of mutations) {
+//         console.log("Here")
+//         for (const node of mutation.addedNodes) {
+//             console.log("there")
+//             console.log("node", node)
+//             if (node.nodeType === 1 && node.matches('[data-automation-id="utilityButtonBar"]')) {
+//                 console.log("level 1")
+//                 observer.disconnect();
+//                 console.log("level 2")
+
+
+//                 node.append(barDivider);
+//                 node.append(targetButtonDiv);
+//                 console.log({ added: node })
+
+
+//                 return;
+//             }
+//         }
+//     }
+// });
+
+// observer.observe(document.body, { childList: true, subtree: true });
