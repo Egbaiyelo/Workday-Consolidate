@@ -1,4 +1,16 @@
 
+node_modules/
+
+
 **/*.temp.md
 later/
 test/
+
+# For now
+
+# To store handling (encryption, storagr) of passwords
+credentials.js
+
+# To manage access (ensure logged in or signed up) and manage user data
+account.js
+

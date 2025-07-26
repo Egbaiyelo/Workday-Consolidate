@@ -1,6 +1,6 @@
 
 // Look for what to do, sign up, sign in
-function enterAccount() {
+function ensureAccount() {
     const observer = new MutationObserver(() => {
 
         // Ensure signed in? or signed up?

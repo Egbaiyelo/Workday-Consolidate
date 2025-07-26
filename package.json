@@ -1,0 +1,27 @@
+{
+  "name": "workday-Consolidate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "content.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Egbaiyelo/Workday-Consolidate.git"
+  },
+  "keywords": [],
+  "author": "egbaiyelo Moteniola",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Egbaiyelo/Workday-Consolidate/issues"
+  },
+  "homepage": "https://github.com/Egbaiyelo/Workday-Consolidate#readme",
+  "dependencies": {
+    "puppeteer": "^24.15.0"
+  }
+}
