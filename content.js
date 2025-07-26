@@ -1,4 +1,7 @@
 
+
+
+
 // Look for what to do, sign up, sign in
 function ensureAccount() {
     const observer = new MutationObserver(() => {
