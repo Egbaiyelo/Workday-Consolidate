@@ -1,5 +1,5 @@
 {
-  "name": "workday-Consolidate",
+  "name": "myworkday",
   "version": "1.0.0",
   "description": "",
   "main": "content.js",
@@ -14,7 +14,7 @@
     "url": "git+https://github.com/Egbaiyelo/Workday-Consolidate.git"
   },
   "keywords": [],
-  "author": "egbaiyelo Moteniola",
+  "author": "Egbaiyelo Moteniola",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
