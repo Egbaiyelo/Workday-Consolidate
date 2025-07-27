@@ -1,29 +1,47 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
-const creds = require('./credentials');
+const account = require('./account');
 
-const destSite = creds.website;
+// const destSite = account.me.websites[0];
 
-console.log("hello");
 
-// test values
-let values = {
-    email: "testemail@gmail.com",
-    password: "testPassword"
-};
+// account format 
+/**
+ * {
+ *      context: { // group of websites with same email and password, usually just one
+ *          email:
+ *          password:
+ *          websites:
+ *      }, ...
+ * }
+ */
 
-values = creds;
+values = account.test;
 
 (async () => {
-    let browser;
-    try {
+    const browser = await puppeteer.launch({ headless: false, dumpio: true });
 
-        browser = await puppeteer.launch({ headless: false, dumpio: true });
+    // - parse contexes?
+    account.test.websites.forEach(site => {
+        scrapper(browser, site)
+    });
+
+    // Cleanup
+    await browser.close();
+    process.exit(0);
+
+})();
+
+
+async function scrapper(browser, accountSite) {
+
+    if (!accountSite) return;
+    try {
         const page = await browser.newPage();
 
-        await page.goto(destSite, { waitUntil: 'networkidle0' });
+        await page.goto(accountSite, { waitUntil: 'networkidle0' });
 
-        // Clisck Sign In
+        // Click Sign In - Dont think this will ever come up again
         // const signInButton = await page.waitForSelector('[data-automation-id="utilityButtonSignIn"]');
         // console.log("got ", signInButton);
         // const html = await signInButt    on.evaluate(el => el.outerHTML);
@@ -32,75 +50,160 @@ values = creds;
         // console.log("signinbut clicked");
 
 
-        const emailBut = await page.waitForSelector('[data-automation-id="email"]');
-        await page.type('[data-automation-id="email"]', values.email, {delay: 50}); 
-        const butHTML = await emailBut.evaluate(el => el.outerHTML);
-        // console.log("html", butHTML)
+        // Try SignIn
+        try {
+            const signInForm = await page.$('[data-automation-id="signInContent"]', { timeout: 3000 });
 
+            // Enter Email
+            const emailBut = await page.waitForSelector('[data-automation-id="email"]');
+            await page.type('[data-automation-id="email"]', values.email, { delay: 50 });
+            const butHTML = await emailBut.evaluate(el => el.outerHTML);
+            // console.log("html", butHTML)
 
-        const passBut = await page.waitForSelector('[data-automation-id="password"]');
-        await page.type('[data-automation-id="password"]', values.password, {delay: 50}); 
-        const passHTML = await passBut.evaluate(el => el.outerHTML);
-        // console.log("html", passHTML);
+            // Enter Password
+            const passBut = await page.waitForSelector('[data-automation-id="password"]');
+            await page.type('[data-automation-id="password"]', values.password, { delay: 50 });
+            const passHTML = await passBut.evaluate(el => el.outerHTML);
+            // console.log("html", passHTML);
 
+            const submitBut = await page.waitForSelector('[data-automation-id="signInSubmitButton"]');
 
-        const submitBut = await page.waitForSelector('[data-automation-id="signInSubmitButton"]');
-        // await Promise.all([
-        //     page.waitForNavigation({ waitUntil: 'networkidle0' }),
-        //     submitBut.click()
-        // ]);
-        submitBut.click();
-        await new Promise(r => setTimeout(r, 3000))
+            await Promise.all([
+                page.waitForNavigation({ waitUntil: 'networkidle0' }),
+                submitBut.click()
+            ]);
 
-        // submitBut.click();
+            console.log("log in Success ______check");
 
-        await page.evaluate(() => window.scrollBy(0, 500));
-        await new Promise(r => setTimeout(r, 3000))
+        } catch (error) {
+            // Checking if already logged in
+            const navHome = await page.$('[data-automation-id="navigationItem-Candidate Home"]');
 
-
-        const currentUrl = page.url();
-        console.log("Current URL:", currentUrl);
-        await page.click('[data-automation-id="applicationsSectionHeading-CHEVRON"]');
-
-        if (currentUrl.includes("error") || currentUrl.includes("doesn't-exist")) {
-            console.error("!!!!!!!!!!!!!!!!!!!!! Redirected to error page – login may have failed.");
+            if (navHome) console.log("Already Logged in?");
+            else { console.log("Log in error"); console.log(error) };
         }
 
+        // Little check
+        const currentUrl = page.url();
+        console.log("Current URL:", currentUrl);
+        if (currentUrl.includes("error") || currentUrl.includes("doesn't-exist")) {
+            console.error("! Redirected to error page – login may have failed.");
+        }
 
-        // Just for debugginf
-        const pageContent = await page.content(); 
-        fs.writeFileSync('page-snapshot.html', pageContent);
-
-        console.log("Snapshot saved to page-snapshot.html");
-        
-        const bodyText = await page.evaluate(() => document.body.innerText);
-        console.log("Body text after login:\n", bodyText);
-
-    
-        // console.log(page.)
-        // if this not here, failed
+        // Usually Home already
         const goHomeBut = await page.waitForSelector('[data-automation-id="navigationItem-Candidate Home"]');
         goHomeBut.click();
         console.log("went home");
 
+        // Expand applications Sections div
+        await page.click('[data-automation-id="applicationsSectionHeading-CHEVRON"]');
 
-        console.log("===========================\n\n\n\n===========================")
+        // Just for debugging
+        const pageContent = await page.content();
+        fs.writeFileSync('page-snapshot.html', pageContent);
+        console.log("Snapshot saved to page-snapshot.html");
 
+        const bodyText = await page.evaluate(() => document.body.innerText);
+        console.log("Body text after login:\n", bodyText);
 
-        const want = await page.waitForSelector('[data-automation-id="taskListContainer"]');
-        const wantHTML = await want.evaluate(el => el.outerHTML);
-        console.log("fetched", wantHTML);
-    
-        // await page.waitForSelector('[data-automation-id="password"]');
+        console.log("===========================\n\n\n\n===========================");
+
+        const applications = await page.$('[data-automation-id="applicationsSectionHeading"]');
+        const applicationsHTML = applications.evaluate(el => el.outerHTML);
+        const jsonofall = readApplicationStatus(applicationsHTML);
+        console.log(jsonofall)
+
+        // Try get jobs
+        try {
+            const taskList = await page.waitForSelector('[data-automation-id="taskListContainer"]');
+            const taskListHTML = await taskList.evaluate(el => el.outerHTML);
+            console.log("fetched", taskListHTML);
+        } catch (error) {
+            const noApplications = page.$('[data-automation-id="noApplications"]');
+            if (noApplications) console.log("no Applications found");
+            else { console.log("Get Jobs error"); console.log(error) };
+        }
+
         console.log("success");
 
+        // Maybe try get css later
+        const computedStyles = await page.evaluate(() => {
+            const el = document.querySelector('body');
+            const styles = window.getComputedStyle(el);
+            return Object.fromEntries([...styles].map(key => [key, styles.getPropertyValue(key)]));
+        });
+
+        console.log("Computed body styles:\n", computedStyles);
+
+        const cssLinks = await page.$$eval('link[rel="stylesheet"]', links =>
+            links.map(link => link.href)
+        );
+
+        for (const url of cssLinks) {
+            try {
+                const cssResponse = await page.goto(url);
+                const cssContent = await cssResponse.text();
+                // 
+                // console.log(`CSS from ${url}:\n`, cssContent);
+                fs.writeFileSync('styles.css', cssContent);
+            } catch (err) {
+                console.warn(`Failed to fetch CSS from ${url}`, err);
+            }
+        }
+
+        console.log("success");
     }
     catch (error) {
-        console.log("Got error", error);
-        
-    } finally {
-        if (browser) await browser.close();
-        process.exit(0);
+        console.log("Got error => \n", error);
     }
-})();
+};
 
+// scrapper(account.test.websites[0]);
+
+
+function ensureSignIn(page) {
+
+}
+
+
+// Should maybe reverse the logic, check if signed in then sign in? check if applications then get applications
+
+// Reduce HTML to Json
+function readApplicationStatus(name, containerHTML) {
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(containerHTML, 'text/html');
+
+    function getRows(panelId) {
+        const panel = doc.querySelector(`#${panelId}`);
+        if (!panel) return []; 
+
+        const rows = [];
+        panel.querySelectorAll('tr[data-automation-id="taskListRow"]').forEach(row => {
+            const jobTitle = row.querySelector('[data-automation-id="applicationTitle"]')?.textContent.trim();
+            const jobReq = row.querySelector('.css-x4yhc3')?.textContent.trim();
+            const status = row.querySelector('[data-automation-id="applicationStatus"]')?.textContent.trim();
+            const date = row.querySelector('.css-62prxo')?.textContent.trim();
+
+            rows.push({
+                job_title: jobTitle,
+                job_req: jobReq,
+                application_status: status,
+                date_submitted: date
+            });
+        });
+
+        return rows;
+    }
+
+    const result = {
+        name: {
+            active: getRows('tabpanel-tfnw1-0'),
+            inactive: getRows('tabpanel-tfnw1-1'),
+        }
+    };
+
+    return result;
+}
+
+// Maybe get tasks too???
