@@ -12,10 +12,12 @@ test/
 credentials.js
 
 # To manage access (ensure logged in or signed up) and manage user data
-account.js
+# account.js
 
 
 
 page.md
 page-snapshot.html
 element-snapshot.html
+
+**/note.txt
