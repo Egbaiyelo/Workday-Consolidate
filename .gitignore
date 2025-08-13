@@ -2,7 +2,7 @@
 node_modules/
 
 
-**/*.temp.md
+*.temp.*
 **/later/
 test/
 
