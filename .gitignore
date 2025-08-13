@@ -3,7 +3,7 @@ node_modules/
 
 
 **/*.temp.md
-later/
+**/later/
 test/
 
 # For now
@@ -12,7 +12,7 @@ test/
 credentials.js
 
 # To manage access (ensure logged in or signed up) and manage user data
-# account.js
+account.js
 
 
 
@@ -21,3 +21,5 @@ page-snapshot.html
 element-snapshot.html
 
 **/note.txt
+
+data.json
