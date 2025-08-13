@@ -10,7 +10,7 @@
             "run-at": "document_idle"
         }
     ],
-    "permissions": ["storage", "scripting", "activeTab"],
+    "permissions": ["storage", "scripting", "activeTab", "tabs"],
     "background": {
         "service-worker": "background.js",
         "type": "module"

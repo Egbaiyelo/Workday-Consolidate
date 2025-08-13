@@ -1,5 +1,52 @@
 
+//-- 1. add site
+const siteURL = window.location.href;
 
+// Adds site to the watch list
+function addSite() {
+    const companyName = window.location.hostname.split('.')[0];
+    console.log('Company name', companyName);
+
+    const segments = siteURL.split('/');
+    const baseURL = segments.slice(0, 5).join('/');
+
+    // Save to local
+    chrome.storage.local.get("companySites", function (result) {
+        const companySites = result.companySites || {};
+
+        // Shouldn't have duplicates but just checking
+        if (companySites[companyName] && companySites[companyName] != baseURL) {
+            console.log("!duplicate");
+            console.log(companySites[companyName])
+        }
+        companySites[companyName] = baseURL;
+
+        chrome.storage.local.set({ companySites }, function () {
+            console.log(`Saved ${companyName}: ${baseURL}`);
+        });
+    });
+
+    // "https://bmo.wd3.myworkdayjobs.com/en-US/External/userHome"
+}
+
+addSite();
+
+
+//-- 2.login?
+function siteStatus() {
+
+    const observer = new MutationObserver(() => {
+
+        // 
+        const signInForm = document.querySelector('[data-automation-id="signInContent"]');
+
+    });
+
+    // signInContent
+
+    // authViewTitle is Sign In, Create Account
+
+}
 
 
 // Look for what to do, sign up, sign in
@@ -71,26 +118,26 @@ function SignIn(signInButton) {
 
 
     waitForElement('[data-automation-id="signInContent"]')
-    .then(signInContent => {
-        console.log("here!!!")
-        console.log("sign inc onten")
-        const emailBox = document.querySelector('[data-automation-id="email"]');
-        const passwordBox = document.querySelector('[data-automation-id="password"]');
-        if (!emailBox || !passwordBox) {console.log("didnt finds");return false};
+        .then(signInContent => {
+            console.log("here!!!")
+            console.log("sign inc onten")
+            const emailBox = document.querySelector('[data-automation-id="email"]');
+            const passwordBox = document.querySelector('[data-automation-id="password"]');
+            if (!emailBox || !passwordBox) { console.log("didnt finds"); return false };
 
-        console.log(emailBox, passwordBox, "setting", creds)
-        emailBox.value = creds.email;
-        emailBox.dispatchEvent(new Event('input', { bubbles: true }));
-        passwordBox.value = creds.password;
+            console.log(emailBox, passwordBox, "setting", creds)
+            emailBox.value = creds.email;
+            emailBox.dispatchEvent(new Event('input', { bubbles: true }));
+            passwordBox.value = creds.password;
 
-        passwordBox.dispatchEvent(new Event('input', { bubbles: true }));
+            passwordBox.dispatchEvent(new Event('input', { bubbles: true }));
 
-        return true;
-    })
-    .catch(error => {
-        console.log("Sign-in form not loaded:", error);
-        return false;
-    });
+            return true;
+        })
+        .catch(error => {
+            console.log("Sign-in form not loaded:", error);
+            return false;
+        });
 
 
     // // const closeButton = document.querySelector('[aria-label="close"]');
@@ -126,9 +173,9 @@ function awaitElement(selector) {
 function AddLinkToConsolidate(utilityButtonBar) {
     const { targetButtonDiv, barDivider } = AddLinkToConsolidate();
 
-    if (utilityButtonBar){
+    if (utilityButtonBar) {
         console.log("inserting utility button bar")
-        console.log({"utilitybutonbar I got": utilityButtonBar})
+        console.log({ "utilitybutonbar I got": utilityButtonBar })
         utilityButtonBar.insertBefore(barDivider, null);
         utilityButtonBar.insertBefore(targetButtonDiv, null);
         utilityButtonBar.insertBefore(barDivider, null);
@@ -201,3 +248,4 @@ function createConsolidateLink() {
 // });
 
 // observer.observe(document.body, { childList: true, subtree: true });
+
