@@ -1,18 +1,30 @@
 {
     "manifest_version": 3,
-    "name": "Workday-consolidate",
-    "version": "1.0",
-    "description": "",
+    "name": "Workday-consolidate-dev",
+    "version": "0.1.0",
+    "description": "stuff",
+    "background": {
+        "service_worker": "background.js"
+    },
     "content_scripts": [
         {
-            "matches": ["*://*.myworkdayjobs.com/*"],
-            "js": ["content.js"],
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content.js"
+            ],
             "run-at": "document_idle"
         }
     ],
-    "permissions": ["storage", "scripting", "activeTab", "tabs"],
-    "background": {
-        "service-worker": "background.js",
-        "type": "module"
-    }
+    "permissions": [
+        "storage",
+        "scripting",
+        "activeTab",
+        "tabs",
+        "nativeMessaging"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ]
 }
