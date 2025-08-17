@@ -12,7 +12,7 @@ test/
 credentials.js
 
 # To manage access (ensure logged in or signed up) and manage user data
-account.js
+# account.js
 
 
 

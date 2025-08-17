@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const { webScraper, sayhello } = require('./scrape');
+const { addSite, addContext } = require('account.js');
 
 //! Absolute path for deployment
 const DEBUG_LOG = path.join(__dirname, 'debug.log');
