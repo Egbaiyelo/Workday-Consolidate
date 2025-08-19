@@ -7,10 +7,17 @@ const path = "./data.json"
 const account = JSON.parse(fs.readFileSync(path, 'utf-8'));
 console.log(account);
 
+// ---------- Read and write ----------------
+
+function getData() {
+    return JSON.parse(fs.readFileSync(path, 'utf-8'));
+}
 
 function save() {
     fs.writeFileSync(path, JSON.stringify(account, null, 2));
 }
+
+// ----------- Utilities -----------------------
 
 // Ensure the scraper can parse it reasonably
 function ensureFormat(site, lang = "en-US") {
@@ -30,6 +37,7 @@ function ensureFormat(site, lang = "en-US") {
 }
 
 
+// ----------------- core functions ---------------------
 
 // Add a new website to an existing user (by key)
 function addSite(username, siteUrl) {
@@ -76,5 +84,5 @@ function addContext(username, context) {
 
 
 module.exports = {
-    addSite, addContext
+    addSite, addContext, getData
 }
