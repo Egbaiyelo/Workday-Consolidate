@@ -1,16 +1,28 @@
 
-//-- 1. add site
+//
+
+
+//-- 1. ADD SITE
+// The first functionality is adding sites to the watch list, all sites with a workday domain
+// can be tracked and viewed anytime.
+//- Issue -> User might not have mad account on the site yet so I need to confirm that before trying to login
+//  --- Also need to handle failed login
 const siteURL = window.location.href;
 
 // Adds site to the watch list
 function addSite() {
+    // Company name in format like 
+    // bmo.wd3.myworkdayjobs
     const companyName = window.location.hostname.split('.')[0];
-    console.log('Company name', companyName);
+    // console.log('Company name', companyName);
 
     const segments = siteURL.split('/');
     const baseURL = segments.slice(0, 5).join('/');
 
     // Save to local
+    // Redundant storage, given some may not have the app or maybe the app isnt working, it at least keeps them 
+    // in local storage first
+    //- maybe use sync instead
     chrome.storage.local.get("companySites", function (result) {
         const companySites = result.companySites || {};
 
@@ -26,13 +38,14 @@ function addSite() {
         });
     });
 
+    // Example full format
     // "https://bmo.wd3.myworkdayjobs.com/en-US/External/userHome"
 }
 
 addSite();
 
 
-//-- 2.login?
+//-- 2.LOGIN
 function siteStatus() {
 
     const observer = new MutationObserver(() => {
@@ -343,7 +356,7 @@ uploadFile();
 
 
 
-Form data
+// Form data
 
 /**experience
  * 

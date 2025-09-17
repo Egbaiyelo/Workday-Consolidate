@@ -39,7 +39,7 @@ function connectToNativeHost() {
         nativePort = null;
     });
     
-
+    // maybe test connection
 }
 
 
