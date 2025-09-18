@@ -1,8 +1,12 @@
 
-//
+// Add site
+// Login
+// 
+// 
 
 
 //-- 1. ADD SITE
+
 // The first functionality is adding sites to the watch list, all sites with a workday domain
 // can be tracked and viewed anytime.
 //- Issue -> User might not have mad account on the site yet so I need to confirm that before trying to login
@@ -48,6 +52,7 @@ addSite();
 
 
 //-- 2.LOGIN
+
 //- Issue -> Cant decide if should wait for autofill and wait for user to click 
 // -(can be messy with other autocompletes I think)
 // - or put a button that does it all, probably put a button at the to let use sign in without the form (from the utility bar)
@@ -139,6 +144,67 @@ function createAccount(email, password) {
 //-- Add Buttons
 // button for home page
 // Button for sign in / sign up
+
+
+// Adds link to home page
+//! Expects utilitybuttonbar to be present
+function AddLinkToHome(utilityButtonBar) {
+    console.log("$$$$$$$$$$$$$$$$$$$ doingjidajn")
+    const { targetButtonDiv, barDivider } = createHomeLink();
+    console.log(targetButtonDiv, barDivider)
+    
+    //- Probably use mutation observer somehow to make sure its the last element
+    if (utilityButtonBar) {
+        console.log("inserting utility button bar")
+        console.log({ "utilitybutonbar I got": utilityButtonBar })
+        utilityButtonBar.insertBefore(barDivider, null);
+        utilityButtonBar.insertBefore(targetButtonDiv, null);
+        utilityButtonBar.insertBefore(barDivider, null);
+    }
+}
+
+AddLinkToHome(document.querySelector("[data-automation-id='utilityButtonBar']"))
+// 
+function createHomeLink() {
+
+    // Icon and name
+    const targetIcon = document.createElement('span');
+    targetIcon.className = "css-53a7ht";
+
+    const targetText = document.createElement('span');
+    targetText.textContent = "Target";
+    targetText.className = "css-1xtbc5b";
+
+
+    // Button
+    const targetButton = document.createElement('button');
+    targetButton.setAttribute('aria-expanded', 'false');
+    targetButton.setAttribute('aria-haspopup', 'listbox');
+    targetButton.setAttribute('color', '#FFFFFF');
+    targetButton.setAttribute('data-automation-id', 'UtilityMenuButton');
+    targetButton.className = "css-myllji";
+    targetButton.append(targetIcon);
+    targetButton.append(targetText);
+
+
+    //
+    const barDivider = document.createElement('div');
+    barDivider.setAttribute('data-automation-id', 'utility-button-bar-divider');
+    barDivider.setAttribute('color', '#FFFFFF');
+    barDivider.className = 'css-1c0okss';
+
+    const targetButtonDiv = document.createElement('div');
+    targetButtonDiv.setAttribute('data-automation-id', 'utilityButtonTarget');
+    targetButtonDiv.className = "css-wjaruy";
+    // targetButtonDiv.className = 'css-1c0okss';
+    targetButtonDiv.append(targetButton);
+
+    // console.log({ targetButtonDiv: targetButtonDiv })
+
+    return { targetButtonDiv, barDivider }
+}
+
+
 
 
 
@@ -293,57 +359,9 @@ uploadFile();
 //     console.log("reached")
 // }
 
-// function AddLinkToConsolidate(utilityButtonBar) {
-//     const { targetButtonDiv, barDivider } = AddLinkToConsolidate();
-
-//     if (utilityButtonBar) {
-//         console.log("inserting utility button bar")
-//         console.log({ "utilitybutonbar I got": utilityButtonBar })
-//         utilityButtonBar.insertBefore(barDivider, null);
-//         utilityButtonBar.insertBefore(targetButtonDiv, null);
-//         utilityButtonBar.insertBefore(barDivider, null);
-//     }
-// }
 
 
-// function createConsolidateLink() {
 
-//     // Icon and name
-//     const targetIcon = document.createElement('span');
-//     targetIcon.className = "css-53a7ht";
-
-//     const targetText = document.createElement('span');
-//     targetText.textContent = "Target";
-//     targetText.className = "css-1xtbc5b";
-
-
-//     // Button
-//     const targetButton = document.createElement('button');
-//     targetButton.setAttribute('aria-expanded', 'false');
-//     targetButton.setAttribute('aria-haspopup', 'listbox');
-//     targetButton.setAttribute('color', '#FFFFFF');
-//     targetButton.setAttribute('data-automation-id', 'UtilityMenuButton');
-//     targetButton.className = "css-myllji";
-//     targetButton.append(targetIcon);
-//     targetButton.append(targetText);
-
-
-//     //
-//     const barDivider = document.createElement('div');
-//     barDivider.setAttribute('data-automation-id', 'utility-button-bar-divider');
-//     barDivider.setAttribute('color', '#FFFFFF');
-//     barDivider.className = 'css-1c0okss';
-
-//     const targetButtonDiv = document.createElement('div');
-//     targetButtonDiv.setAttribute('data-automation-id', 'utilityButtonTarget');
-//     targetButtonDiv.className = "css-wjaruy";
-//     // targetButtonDiv.className = 'css-1c0okss';
-//     targetButtonDiv.append(targetButton);
-
-//     // console.log({ targetButtonDiv: targetButtonDiv })
-
-//     return { targetButtonDiv, barDivider }
-// }
 
 
 
