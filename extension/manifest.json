@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "MyWorkday-dev-0.0",
     "version": "0.1.0",
-    "description": "stuff",
+    "description": "testing",
     "background": {
         "service_worker": "background.js"
     },

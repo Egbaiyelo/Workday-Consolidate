@@ -25,8 +25,10 @@ function addSite() {
     //- maybe use sync instead
     chrome.storage.local.get("companySites", function (result) {
         const companySites = result.companySites || {};
+        console.log("result, companysites", result, companySites);
 
         // Shouldn't have duplicates but just checking
+        // If the company name exists but doesnt have the same data as the baseURL
         if (companySites[companyName] && companySites[companyName] != baseURL) {
             console.log("!duplicate");
             console.log(companySites[companyName])
@@ -46,10 +48,16 @@ addSite();
 
 
 //-- 2.LOGIN
+//- Issue -> Cant decide if should wait for autofill and wait for user to click 
+// -(can be messy with other autocompletes I think)
+// - or put a button that does it all, probably put a button at the to let use sign in without the form (from the utility bar)
 function siteStatus() {
 
     const observer = new MutationObserver(() => {
-        // 
+
+        // Mostly from sites like Linkedin that lead directly to the application
+        // If user goes there themselves and wants to apply eventually, 
+        // - it still pops up
         const signInForm = document.querySelector('[data-automation-id="signInContent"]');
 
         if (signInForm) {
@@ -62,9 +70,12 @@ function siteStatus() {
             } else if (formType == 'Create Account') {
                 console.log('create account')
                 createAccount("hellp", "word")
-            } else {
-                alert("Can't identify the form");
-            }
+            } 
+            //- Else put button in the utility bbar as said above
+
+            // else {
+            //     alert("Can't identify the form");
+            // }
 
             observer.disconnect();
         }
@@ -76,14 +87,16 @@ function siteStatus() {
     });
 
     const timeoutId = setTimeout(() => {
-        console.warn("Timeout: Sign-in form not found.");
+        //- What to do with this part?
+        // console.warn("Timeout: Sign-in form not found.");
         observer.disconnect();
-        alert("Login/Register form did not appear.");
+        // alert("Login/Register form did not appear.");
     }, 5000);
 }
-//- siteStatus();
+siteStatus();
 
-
+// Autofills Sign In info
+//! Assumes all needed elements are present 
 function signIn(email, password) {
     const emailBox = document.querySelector('[data-automation-id="email"]');
     const passwordBox = document.querySelector('[data-automation-id="password"]');
@@ -100,7 +113,8 @@ function signIn(email, password) {
     // signInButton.click();
 }
 
-
+// Autofills Account info
+//! Assumes all needed elements are present
 function createAccount(email, password) {
     const emailBox = document.querySelector('[data-automation-id="email"]');
     const passwordBox = document.querySelector('[data-automation-id="password"]');
@@ -117,9 +131,15 @@ function createAccount(email, password) {
     const createAccountCB = document.querySelector("[data-automation-id='createAccountCheckbox']");
     if (createAccountCB) createAccountCB.checked = true;
 
-    const createAccountButton = document.querySelector("[data-automation-id='createAccountSubmitButton']");
+    // const createAccountButton = document.querySelector("[data-automation-id='createAccountSubmitButton']");
     // createAccountButton.click();
 }
+
+
+//-- Add Buttons
+// button for home page
+// Button for sign in / sign up
+
 
 
 function uploadFile() {
