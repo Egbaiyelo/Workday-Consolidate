@@ -23,3 +23,6 @@ element-snapshot.html
 **/note.txt
 
 data.json
+
+# Log files
+*.log
