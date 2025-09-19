@@ -163,7 +163,7 @@ function AddLinkToHome(utilityButtonBar) {
         console.log({ "utilitybuttonbar I got": utilityButtonBar })
         utilityButtonBar.insertBefore(barDivider, null);
         utilityButtonBar.insertBefore(targetButtonDiv, null);
-        utilityButtonBar.insertBefore(barDivider, null);
+        // utilityButtonBar.insertBefore(barDivider, null);
     }
 }
 
@@ -186,12 +186,18 @@ buttonBarObserver.observe(document.body, {
     subtree: true
 });
 
-
+//- probably move this above the other method for easy read
 // returns bardivider and button element
 function createHomeLink() {
 
     // Icon div and style
     const targetIcon = document.createElement('span');
+    const targetSVG = document.createElement('img');
+    targetSVG.src = chrome.runtime.getURL('icons/account-folder.svg');
+    targetSVG.width = 20;  
+    targetSVG.height = 20; 
+    targetSVG.alt = 'Account Icon';
+    targetIcon.appendChild(targetSVG);
     // targetIcon.className = "css-53a7ht";
     Object.assign(targetIcon.style, {
         boxSizing: 'border-box',
@@ -205,7 +211,7 @@ function createHomeLink() {
     targetText.textContent = "Target";
     // targetText.className = "css-1xtbc5b";
     Object.assign(targetText.style, {
-        color: 'black',
+        color: '#494949',
         fontSize: '12px',
         fontWeight: '500',
         lineHeight: '14px',
@@ -245,8 +251,10 @@ function createHomeLink() {
     barDivider.setAttribute('data-automation-id', 'utility-button-bar-divider');
     barDivider.setAttribute('color', '#FFFFFF');
     // barDivider.className = 'css-1c0okss';
+    barDivider.setAttribute('color', '#494949');
     Object.assign(barDivider.style, {
-        backgroundColor: ' rgb(255, 255, 255)',
+        // color: '#494949',
+        backgroundColor: ' rgb(73, 73, 73)',
         height: ' 12px',
         margin: ' 0px',
         opacity: ' 0.5',
