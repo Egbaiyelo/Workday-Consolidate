@@ -2,7 +2,8 @@
 node_modules/
 
 
-**/*.temp.md
+*.temp.*
+*.log
 **/later/
 test/
 
@@ -23,3 +24,5 @@ element-snapshot.html
 **/note.txt
 
 data.json
+
+html-snapshots/
