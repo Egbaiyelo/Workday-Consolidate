@@ -151,9 +151,8 @@ function createAccount(email, password) {
 
 // Adds link to home page
 //! Expects utilitybuttonbar to be present
-function AddLinkToHome(utilityButtonBar) {
-    console.log("$$$$$$$$$$$$$$$$$$$ doingjidajn")
-    const { targetButtonDiv, barDivider } = createHomeLink();
+function AddLinkToHome(utilityButtonBar, targetColor) {
+    const { targetButtonDiv, barDivider } = createHomeLink(targetColor);
     console.log(targetButtonDiv, barDivider)
     console.log('then', utilityButtonBar)
 
@@ -163,22 +162,24 @@ function AddLinkToHome(utilityButtonBar) {
         console.log({ "utilitybuttonbar I got": utilityButtonBar })
         utilityButtonBar.insertBefore(barDivider, null);
         utilityButtonBar.insertBefore(targetButtonDiv, null);
-        // utilityButtonBar.insertBefore(barDivider, null);
     }
 }
 
-console.log("helo")
 const buttonBarObserver = new MutationObserver(() => {
 
-    const utilButBar = document.querySelector("[data-automation-id='utilityButtonBar']");
-    console.log(utilButBar);
+    const utilButtonBar = document.querySelector("[data-automation-id='utilityButtonBar']");
 
-    if (utilButBar) {
-        console.log("found it!!!!!!!!!!!!");
-        AddLinkToHome(utilButBar);
+    if (utilButtonBar) {
+        // Getting the base text color for blending in
+        const utilButton = utilButtonBar.querySelector('button');
+        const utilColor = getComputedStyle(utilButton).color;
+        console.log("util button", utilButton, utilColor)
+        console.log("util button color", utilColor)
+
+        //- Probably check for my element instead and add it if not there based on Status
+        AddLinkToHome(utilButtonBar, utilColor);
         buttonBarObserver.disconnect();
     }
-    // AddLinkToHome(utilButBar);
 });
 
 buttonBarObserver.observe(document.body, {
@@ -187,31 +188,43 @@ buttonBarObserver.observe(document.body, {
 });
 
 //- probably move this above the other method for easy read
+//- Need to add to hamburger menu too in case it gets squashed or on mobile
+
 // returns bardivider and button element
-function createHomeLink() {
+function createHomeLink(targetColor = 'white') {
 
     // Icon div and style
     const targetIcon = document.createElement('span');
-    const targetSVG = document.createElement('img');
-    targetSVG.src = chrome.runtime.getURL('icons/account-folder.svg');
-    targetSVG.width = 20;  
-    targetSVG.height = 20; 
-    targetSVG.alt = 'Account Icon';
-    targetIcon.appendChild(targetSVG);
-    // targetIcon.className = "css-53a7ht";
-    Object.assign(targetIcon.style, {
-        boxSizing: 'border-box',
-        display: 'inline-block',
-        margin: '0px 3px',
-        opacity: '0.5'
-    });
+    // Fetching account icon
+    fetch(chrome.runtime.getURL('icons/account-folder.svg'))
+        .then(res => res.text())
+        .then(svgContent => {
+            Object.assign(targetIcon.style, {
+                display: 'inline-block',
+                margin: '0 3px',
+                opacity: '0.5',
+                color: targetColor,
+                width: 20,
+                height: 20,
+                alt: 'Account icon'
+            });
+
+            targetIcon.innerHTML = svgContent;
+
+            // Overiding size
+            const svg = targetIcon.querySelector('svg');
+            console.log('&&&vg', targetIcon)
+            if (svg) {
+                svg.setAttribute('width', '20');
+                svg.setAttribute('height', '20');
+            }
+        });
 
     // Button text and style
     const targetText = document.createElement('span');
-    targetText.textContent = "Target";
-    // targetText.className = "css-1xtbc5b";
+    targetText.textContent = "MyWorkday";
     Object.assign(targetText.style, {
-        color: '#494949',
+        color: targetColor,
         fontSize: '12px',
         fontWeight: '500',
         lineHeight: '14px',
@@ -227,7 +240,6 @@ function createHomeLink() {
     targetButton.setAttribute('aria-haspopup', 'listbox');
     targetButton.setAttribute('color', '#FFFFFF');
     targetButton.setAttribute('data-automation-id', 'UtilityMenuButton');
-    // targetButton.className = "css-myllji";
     Object.assign(targetButton.style, {
         WebkitBoxAlign: 'center',
         alignItems: 'center',
@@ -250,11 +262,9 @@ function createHomeLink() {
     const barDivider = document.createElement('div');
     barDivider.setAttribute('data-automation-id', 'utility-button-bar-divider');
     barDivider.setAttribute('color', '#FFFFFF');
-    // barDivider.className = 'css-1c0okss';
-    barDivider.setAttribute('color', '#494949');
+    // barDivider.setAttribute('color', targetColor);
     Object.assign(barDivider.style, {
-        // color: '#494949',
-        backgroundColor: ' rgb(73, 73, 73)',
+        backgroundColor: targetColor,
         height: ' 12px',
         margin: ' 0px',
         opacity: ' 0.5',
@@ -262,15 +272,17 @@ function createHomeLink() {
     })
 
 
-
     const targetButtonDiv = document.createElement('div');
     targetButtonDiv.setAttribute('data-automation-id', 'utilityButtonTarget');
-    // targetButtonDiv.className = "css-wjaruy";
     targetButtonDiv.style.height = '21px';
-    // targetButtonDiv.className = 'css-1c0okss';
     targetButtonDiv.append(targetButton);
-
-    // console.log({ targetButtonDiv: targetButtonDiv })
+    Object.assign(targetButtonDiv.style, {
+        //- for style update
+        // border: `1px solid ${targetColor}`,
+        // borderRadius: '2px',
+        // padding: '2px',
+        height: '21px'
+    })
 
     return { targetButtonDiv, barDivider }
 }
