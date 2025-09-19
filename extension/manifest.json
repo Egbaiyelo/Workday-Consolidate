@@ -30,7 +30,8 @@
     "web_accessible_resources": [
         {
             "resources": [
-                "icons/*"
+                "icons/*", 
+                "pages/*"
             ],
             "matches": [
                 "<all_urls>"

@@ -81,6 +81,24 @@ function handleCommand(message) {
                 command: 'scrape_response',
                 timestamp: new Date().toISOString()
             };
+            
+        case '/add-site':
+            logDebug('^--Command: Scrape');
+            return {
+                success: true,
+                result: `Scraped data from: ${_data?.url || 'unknown URL'}`,
+                command: 'scrape_response',
+                timestamp: new Date().toISOString()
+            };
+
+        case '/scrape':
+            logDebug('^--Command: Scrape');
+            return {
+                success: true,
+                result: `Scraped data from: ${_data?.url || 'unknown URL'}`,
+                command: 'scrape_response',
+                timestamp: new Date().toISOString()
+            };
 
         default:
             logDebug('^--Command: UnKnown');

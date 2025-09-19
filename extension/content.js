@@ -19,7 +19,6 @@ function addSite() {
     // Company name in format like 
     // bmo.wd3.myworkdayjobs
     const companyName = window.location.hostname.split('.')[0];
-    // console.log('Company name', companyName);
 
     const segments = siteURL.split('/');
     const baseURL = segments.slice(0, 5).join('/');
@@ -56,14 +55,13 @@ addSite();
 
 //- Issue -> Cant decide if should wait for autofill and wait for user to click 
 // -(can be messy with other autocompletes I think)
-// - or put a button that does it all, probably put a button at the to let use sign in without the form (from the utility bar)
+// - or put a button that does it all, probably put a button at the top to let use sign in without the form (from the utility bar)
 function siteStatus() {
 
     const observer = new MutationObserver(() => {
 
         // Mostly from sites like Linkedin that lead directly to the application
-        // If user goes there themselves and wants to apply eventually, 
-        // - it still pops up
+        // If user goes there themselves and wants to apply eventually, it still pops up
         const signInForm = document.querySelector('[data-automation-id="signInContent"]');
 
         if (signInForm) {
@@ -142,7 +140,7 @@ function createAccount(email, password) {
 }
 
 
-//-- 3.Add Buttons
+//-- 3.Add MyWorkday Button
 
 // button for home page
 // Button for sign in / sign up
@@ -165,24 +163,31 @@ function AddLinkToHome(utilityButtonBar, targetColor) {
     }
 }
 
-const buttonBarObserver = new MutationObserver(() => {
+const generalObserver = new MutationObserver(() => {
 
     const utilButtonBar = document.querySelector("[data-automation-id='utilityButtonBar']");
+    const signInFormo = document.querySelector("[data-automation-id='signInFormo']");
 
     if (utilButtonBar) {
-        // Getting the base text color for blending in
-        const utilButton = utilButtonBar.querySelector('button');
-        const utilColor = getComputedStyle(utilButton).color;
-        console.log("util button", utilButton, utilColor)
-        console.log("util button color", utilColor)
 
-        //- Probably check for my element instead and add it if not there based on Status
-        AddLinkToHome(utilButtonBar, utilColor);
-        buttonBarObserver.disconnect();
+        // Given the way the page routes, better to keep checking and ensure adding the link
+        const itemPresent = document.querySelector('#myWorkday-button-div');
+        if (!itemPresent) {
+            // Getting the base text color for blending in
+            const utilButton = utilButtonBar.querySelector('button');
+            const utilColor = getComputedStyle(utilButton).color;
+            console.log("util button", utilButton, utilColor)
+            console.log("util button color", utilColor)
+    
+            //- Probably check for my element instead and add it if not there based on Status
+            AddLinkToHome(utilButtonBar, utilColor);
+            // generalObserver.disconnect();
+        }
     }
 });
 
-buttonBarObserver.observe(document.body, {
+//- maybe observe the button bar instead?
+generalObserver.observe(document.body, {
     childList: true,
     subtree: true
 });
@@ -213,7 +218,7 @@ function createHomeLink(targetColor = 'white') {
 
             // Overiding size
             const svg = targetIcon.querySelector('svg');
-            console.log('&&&vg', targetIcon)
+            console.log('&&&svg', targetIcon)
             if (svg) {
                 svg.setAttribute('width', '20');
                 svg.setAttribute('height', '20');
@@ -256,6 +261,10 @@ function createHomeLink(targetColor = 'white') {
     })
     targetButton.append(targetIcon);
     targetButton.append(targetText);
+    targetButton.onclick = () => {
+        const homeURL = chrome.runtime.getURL('pages/myWorkday-home.html');
+        window.open(homeURL); 
+    };
 
 
     // Bardivider and style
@@ -276,8 +285,10 @@ function createHomeLink(targetColor = 'white') {
     targetButtonDiv.setAttribute('data-automation-id', 'utilityButtonTarget');
     targetButtonDiv.style.height = '21px';
     targetButtonDiv.append(targetButton);
+    targetButtonDiv.id = "myWorkday-button-div";
     Object.assign(targetButtonDiv.style, {
         //- for style update
+        //- also add hover thingy for style update
         // border: `1px solid ${targetColor}`,
         // borderRadius: '2px',
         // padding: '2px',

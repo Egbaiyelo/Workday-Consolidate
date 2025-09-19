@@ -3,7 +3,6 @@
 let nativePort = null;
 
 chrome.runtime.onInstalled.addListener(() => {
-    console.log("$$...Installed");
     connectToNativeHost();
 });
 
