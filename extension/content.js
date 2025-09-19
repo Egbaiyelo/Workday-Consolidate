@@ -9,8 +9,9 @@
 
 // The first functionality is adding sites to the watch list, all sites with a workday domain
 // can be tracked and viewed anytime.
-//- Issue -> User might not have mad account on the site yet so I need to confirm that before trying to login
+//- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
 //  --- Also need to handle failed login
+//  --- Maybe check if user ever signed in?
 const siteURL = window.location.href;
 
 // Adds site to the watch list
@@ -75,7 +76,7 @@ function siteStatus() {
             } else if (formType == 'Create Account') {
                 console.log('create account')
                 createAccount("hellp", "word")
-            } 
+            }
             //- Else put button in the utility bbar as said above
 
             // else {
@@ -141,10 +142,12 @@ function createAccount(email, password) {
 }
 
 
-//-- Add Buttons
+//-- 3.Add Buttons
+
 // button for home page
 // Button for sign in / sign up
 
+// Issue -> Might move buttons somewhere else, login/register button and then the home button
 
 // Adds link to home page
 //! Expects utilitybuttonbar to be present
@@ -152,28 +155,64 @@ function AddLinkToHome(utilityButtonBar) {
     console.log("$$$$$$$$$$$$$$$$$$$ doingjidajn")
     const { targetButtonDiv, barDivider } = createHomeLink();
     console.log(targetButtonDiv, barDivider)
-    
+    console.log('then', utilityButtonBar)
+
     //- Probably use mutation observer somehow to make sure its the last element
     if (utilityButtonBar) {
         console.log("inserting utility button bar")
-        console.log({ "utilitybutonbar I got": utilityButtonBar })
+        console.log({ "utilitybuttonbar I got": utilityButtonBar })
         utilityButtonBar.insertBefore(barDivider, null);
         utilityButtonBar.insertBefore(targetButtonDiv, null);
         utilityButtonBar.insertBefore(barDivider, null);
     }
 }
 
-AddLinkToHome(document.querySelector("[data-automation-id='utilityButtonBar']"))
-// 
+console.log("helo")
+const buttonBarObserver = new MutationObserver(() => {
+
+    const utilButBar = document.querySelector("[data-automation-id='utilityButtonBar']");
+    console.log(utilButBar);
+
+    if (utilButBar) {
+        console.log("found it!!!!!!!!!!!!");
+        AddLinkToHome(utilButBar);
+        buttonBarObserver.disconnect();
+    }
+    // AddLinkToHome(utilButBar);
+});
+
+buttonBarObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+
+// returns bardivider and button element
 function createHomeLink() {
 
-    // Icon and name
+    // Icon div and style
     const targetIcon = document.createElement('span');
-    targetIcon.className = "css-53a7ht";
+    // targetIcon.className = "css-53a7ht";
+    Object.assign(targetIcon.style, {
+        boxSizing: 'border-box',
+        display: 'inline-block',
+        margin: '0px 3px',
+        opacity: '0.5'
+    });
 
+    // Button text and style
     const targetText = document.createElement('span');
     targetText.textContent = "Target";
-    targetText.className = "css-1xtbc5b";
+    // targetText.className = "css-1xtbc5b";
+    Object.assign(targetText.style, {
+        color: 'black',
+        fontSize: '12px',
+        fontWeight: '500',
+        lineHeight: '14px',
+        margin: '0px 3px',
+        opacity: '1',
+        textDecorationSkipInk: 'none'
+    })
 
 
     // Button
@@ -182,20 +221,44 @@ function createHomeLink() {
     targetButton.setAttribute('aria-haspopup', 'listbox');
     targetButton.setAttribute('color', '#FFFFFF');
     targetButton.setAttribute('data-automation-id', 'UtilityMenuButton');
-    targetButton.className = "css-myllji";
+    // targetButton.className = "css-myllji";
+    Object.assign(targetButton.style, {
+        WebkitBoxAlign: 'center',
+        alignItems: 'center',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        height: '21px',
+        margin: '0px 9px',
+        padding: '0px',
+        whiteSpace: 'nowrap',
+        textDecorationSkipInk: 'none',
+        color: 'rgb(255, 255, 255)',
+    })
     targetButton.append(targetIcon);
     targetButton.append(targetText);
 
 
-    //
+    // Bardivider and style
     const barDivider = document.createElement('div');
     barDivider.setAttribute('data-automation-id', 'utility-button-bar-divider');
     barDivider.setAttribute('color', '#FFFFFF');
-    barDivider.className = 'css-1c0okss';
+    // barDivider.className = 'css-1c0okss';
+    Object.assign(barDivider.style, {
+        backgroundColor: ' rgb(255, 255, 255)',
+        height: ' 12px',
+        margin: ' 0px',
+        opacity: ' 0.5',
+        width: ' 1px'
+    })
+
+
 
     const targetButtonDiv = document.createElement('div');
     targetButtonDiv.setAttribute('data-automation-id', 'utilityButtonTarget');
-    targetButtonDiv.className = "css-wjaruy";
+    // targetButtonDiv.className = "css-wjaruy";
+    targetButtonDiv.style.height = '21px';
     // targetButtonDiv.className = 'css-1c0okss';
     targetButtonDiv.append(targetButton);
 
@@ -203,7 +266,6 @@ function createHomeLink() {
 
     return { targetButtonDiv, barDivider }
 }
-
 
 
 
@@ -229,7 +291,7 @@ function uploadFile() {
     });
 
     observer.observe(document.body, {
-        childList: true, 
+        childList: true,
         subtree: true
     })
 
