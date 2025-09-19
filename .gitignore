@@ -1,0 +1,29 @@
+
+node_modules/
+
+
+*.temp.*
+*.log
+**/later/
+test/
+
+# For now
+
+# To store handling (encryption, storagr) of passwords
+credentials.js
+
+# To manage access (ensure logged in or signed up) and manage user data
+account.js
+
+
+
+page.md
+page-snapshot.html
+element-snapshot.html
+
+**/note.txt
+
+data.json
+
+
+html-snapshots/

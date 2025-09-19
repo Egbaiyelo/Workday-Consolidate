@@ -1,0 +1,7 @@
+{
+  "name": "com.me.my_workday",
+  "description": "Test Application",
+  "path": "C:\\Users\\HP\\Documents\\GitHub\\Controller-class\\test-app\\file.bat",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://danlbghkfpdoocolnkighecopbfkekee/"]
+}
