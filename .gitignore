@@ -2,7 +2,8 @@
 node_modules/
 
 
-**/*.temp.md
+*.temp.*
+*.log
 **/later/
 test/
 
@@ -26,3 +27,4 @@ data.json
 
 # Log files
 *.log
+html-snapshots/
