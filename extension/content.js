@@ -176,13 +176,45 @@ const generalObserver = new MutationObserver(() => {
             // Getting the base text color for blending in
             const utilButton = utilButtonBar.querySelector('button');
             const utilColor = getComputedStyle(utilButton).color;
-            console.log("util button", utilButton, utilColor)
-            console.log("util button color", utilColor)
-    
+            console.log("util button", utilButton, utilColor);
+            console.log("util button color", utilColor);
+
             //- Probably check for my element instead and add it if not there based on Status
             AddLinkToHome(utilButtonBar, utilColor);
             // generalObserver.disconnect();
         }
+    }
+
+    if (signInFormo) {
+
+        //- New flow -> user clicks sign in and can then register or login with myWorkday
+        //- maybe offer to register if not and if user logs in maybe save pass info
+        const formType = document.getElementById('authViewTitle').textContent;
+        if (formType == 'Sign In') {
+            //- onclick signin and then click button
+            // signIn("hellp", "word");
+
+            const signInHelper = document.querySelector('#myWorkday-signIn-helper');
+            if (!signInHelper) {
+                const element = createAccountHelper('Sign in with MyWorkday', () => {});
+                element.id = 'myWorkday-signIn-helper';
+                console.log('elemento', element);
+                signInFormo.appendChild(element);
+            }
+            
+
+        } else if (formType == 'Create Account') {
+            // createAccount("hellp", "word");
+
+            const registerHelper = document.querySelector('#myWorkday-register-helper');
+            if (!registerHelper) {
+                const element = createAccountHelper('Register with MyWorkday',() => {});
+                element.id = 'myWorkday-register-helper';
+                signInFormo.appendChild(element);
+            }
+
+        }
+
     }
 });
 
@@ -263,7 +295,7 @@ function createHomeLink(targetColor = 'white') {
     targetButton.append(targetText);
     targetButton.onclick = () => {
         const homeURL = chrome.runtime.getURL('pages/myWorkday-home.html');
-        window.open(homeURL); 
+        window.open(homeURL);
     };
 
 
@@ -296,6 +328,62 @@ function createHomeLink(targetColor = 'white') {
     })
 
     return { targetButtonDiv, barDivider }
+}
+
+//- add button and link later
+function createAccountHelper(helperText, onClickHandler) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'center';
+    container.style.marginTop = '20px';
+
+    // OR Separator
+    const separator = document.createElement('div');
+    separator.style.display = 'flex';
+    separator.style.alignItems = 'center';
+    separator.style.textAlign = 'center';
+    separator.style.color = '#999';
+    separator.style.fontSize = '12px';
+    separator.style.margin = '20px 0';
+    separator.style.width = '100%';
+    separator.innerHTML = `
+        <span style="flex: 1; border-bottom: 1px solid #ccc; margin-right: 10px;"></span>
+        <span>OR</span>
+        <span style="flex: 1; border-bottom: 1px solid #ccc; margin-left: 10px;"></span>
+    `;
+
+    // MyWorkday Sign In Button
+    const button = document.createElement('button');
+    button.textContent = helperText;
+    button.style.padding = '10px 16px';
+    button.style.border = '1px solid #ccc';
+    button.style.borderRadius = '4px';
+    button.style.backgroundColor = '#f7f7f7';
+    button.style.cursor = 'pointer';
+    button.style.fontWeight = 'bold';
+    button.style.color = '#333';
+    button.style.display = 'flex';
+    button.style.alignItems = 'center';
+    button.style.gap = '8px';
+
+    // icon
+    // const icon = document.createElement('img');
+    // icon.src = chrome.runtime.getURL('icons/workday-icon.svg'); 
+    // icon.alt = 'Workday icon';
+    // icon.style.width = '20px';
+    // icon.style.height = '20px';
+    // button.prepend(icon);
+
+    // signin/register event listener
+    if (onClickHandler) {
+        button.addEventListener('click', onClickHandler);
+    }
+
+    container.appendChild(separator);
+    container.appendChild(button);
+
+    return container;
 }
 
 
