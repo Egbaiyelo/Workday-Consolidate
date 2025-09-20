@@ -7,3 +7,4 @@ Ensure signin help and log in help buttons
 
 <!-- Future -->
 Allow users to save postings to apply to later?
+Log the last time visiting a site maybe

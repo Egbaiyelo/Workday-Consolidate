@@ -101,7 +101,8 @@ siteStatus();
 
 // Autofills Sign In info
 //! Assumes all needed elements are present 
-function signIn(email, password) {
+// If signinbutton given, it clicks it
+function signIn(email, password, submit) {
     const emailBox = document.querySelector('[data-automation-id="email"]');
     const passwordBox = document.querySelector('[data-automation-id="password"]');
     if (!emailBox || !passwordBox) { console.log("didnt finds"); return false };
@@ -115,11 +116,31 @@ function signIn(email, password) {
     // sign in for now
     // const signInButton = document.querySelector("[data-automation-id='signInSubmitButton']");
     // signInButton.click();
+
+    // 
+    if (submit) {
+        // console.log('------------------((((((((((signing in');
+        const signInButton = document.querySelector("[data-automation-id='click_filter']");
+        console.log(signInButton);
+        signInButton.click();
+        //- Do for register too
+        
+
+        // signInButton.dispatchEvent(new MouseEvent('click', {
+        //     view: window,
+        //     bubbles: true,
+        //     cancelable: true,
+        //     trusted: true,
+        //     isTrusted: true
+        // }));
+
+
+    }
 }
 
 // Autofills Account info
 //! Assumes all needed elements are present
-function createAccount(email, password) {
+function createAccount(email, password, submit) {
     const emailBox = document.querySelector('[data-automation-id="email"]');
     const passwordBox = document.querySelector('[data-automation-id="password"]');
     const verifyPasswordBox = document.querySelector('[data-automation-id="verifyPassword"]');
@@ -135,8 +156,11 @@ function createAccount(email, password) {
     const createAccountCB = document.querySelector("[data-automation-id='createAccountCheckbox']");
     if (createAccountCB) createAccountCB.checked = true;
 
-    // const createAccountButton = document.querySelector("[data-automation-id='createAccountSubmitButton']");
-    // createAccountButton.click();
+    // 
+    if (submit) {
+        const createAccountButton = document.querySelector("[data-automation-id='createAccountSubmitButton']");
+        createAccountButton.click();
+    }
 }
 
 
@@ -171,8 +195,21 @@ const generalObserver = new MutationObserver(() => {
     if (utilButtonBar) {
 
         // Given the way the page routes, better to keep checking and ensure adding the link
-        const itemPresent = document.querySelector('#myWorkday-button-div');
-        if (!itemPresent) {
+        const myWorkdayButton = document.querySelector('#myWorkday-button-div');
+        const barDivider = document.querySelector('#myWorkday-divider-div');
+        //- Ensure its last element and change name from item present
+        // console.log('itemPresent', myWorkdayButton)
+
+        if (myWorkdayButton) {
+            console.log('^^^^^^^^^^^^^ehwreheye', utilButtonBar.children, utilButtonBar.children[utilButtonBar.children.length - 1])
+            if (utilButtonBar.children[utilButtonBar.children.length - 1].id != 'myWorkday-button-div') {
+
+                utilButtonBar.appendChild(barDivider);
+                utilButtonBar.appendChild(myWorkdayButton);
+            }
+                
+
+        } else {
             // Getting the base text color for blending in
             const utilButton = utilButtonBar.querySelector('button');
             const utilColor = getComputedStyle(utilButton).color;
@@ -196,19 +233,34 @@ const generalObserver = new MutationObserver(() => {
 
             const signInHelper = document.querySelector('#myWorkday-signIn-helper');
             if (!signInHelper) {
-                const element = createAccountHelper('Sign in with MyWorkday', () => {});
+
+                const element = createAccountHelper('Sign in with MyWorkday', () => {
+                    // chrome.runtime.sendMessage({ action: 'getCredentials' }, (response) => {
+                    //     if (chrome.runtime.lastError) {
+                    //         console.error('Error messaging extension:', chrome.runtime.lastError.message);
+                    //         return;
+                    //     }
+
+                    //     if (response && response.username && response.password) {
+                    //         signIn(response.username, response.password, true);
+                    //     } else {
+                    //         console.error('Invalid credentials received from extension');
+                    //     }
+                    // });
+                    signIn('abcdefg@gmail.com', 'Abc123!!', true)
+                });
                 element.id = 'myWorkday-signIn-helper';
                 console.log('elemento', element);
                 signInFormo.appendChild(element);
             }
-            
+
 
         } else if (formType == 'Create Account') {
             // createAccount("hellp", "word");
 
             const registerHelper = document.querySelector('#myWorkday-register-helper');
             if (!registerHelper) {
-                const element = createAccountHelper('Register with MyWorkday',() => {});
+                const element = createAccountHelper('Register with MyWorkday', () => { });
                 element.id = 'myWorkday-register-helper';
                 signInFormo.appendChild(element);
             }
@@ -303,6 +355,7 @@ function createHomeLink(targetColor = 'white') {
     const barDivider = document.createElement('div');
     barDivider.setAttribute('data-automation-id', 'utility-button-bar-divider');
     barDivider.setAttribute('color', '#FFFFFF');
+    barDivider.id = 'myWorkday-divider-div';
     // barDivider.setAttribute('color', targetColor);
     Object.assign(barDivider.style, {
         backgroundColor: targetColor,

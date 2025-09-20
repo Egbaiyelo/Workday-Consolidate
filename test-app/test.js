@@ -91,6 +91,17 @@ function handleCommand(message) {
                 timestamp: new Date().toISOString()
             };
 
+        case '/get-credentials': 
+            logDebug('^--Command: getcredentials');
+            return {
+                success: true,
+                result: {
+                    email: 'hello',
+                    password: 'hi'
+                },
+                command: 'get-credentials-response',
+                timestamp: new Date().toISOString()
+            }
         case '/scrape':
             logDebug('^--Command: Scrape');
             return {
