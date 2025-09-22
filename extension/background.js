@@ -84,24 +84,24 @@ globalThis.testNative = () => {
 
 
 // 
-// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-//     if (message.action === 'getCredentials') {
-//         const port = chrome.runtime.connectNative('com.me.my_workday');
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'getCredentials') {
+        const port = chrome.runtime.connectNative('com.me.my_workday');
 
-//         port.onMessage.addListener((nativeResponse) => {
-//             console.log('Received from native app:', nativeResponse);
-//             sendResponse(nativeResponse); 
-//         });
+        port.onMessage.addListener((nativeResponse) => {
+            console.log('Received from native app:', nativeResponse);
+            sendResponse(nativeResponse); 
+        });
 
-//         port.onDisconnect.addListener(() => {
-//             if (chrome.runtime.lastError) {
-//                 console.error('Native messaging error:', chrome.runtime.lastError.message);
-//             }
-//         });
+        port.onDisconnect.addListener(() => {
+            if (chrome.runtime.lastError) {
+                console.error('Native messaging error:', chrome.runtime.lastError.message);
+            }
+        });
 
-//         port.postMessage({ action: 'get_credentials' });
+        port.postMessage({ action: 'get_credentials' });
 
-//         return true; 
-//     }
-// });
+        return true; 
+    }
+});
 
