@@ -97,7 +97,7 @@ function siteStatus() {
         // alert("Login/Register form did not appear.");
     }, 5000);
 }
-siteStatus();
+// siteStatus();
 
 // Autofills Sign In info
 //! Assumes all needed elements are present 
@@ -175,13 +175,13 @@ function createAccount(email, password, submit) {
 //! Expects utilitybuttonbar to be present
 function AddLinkToHome(utilityButtonBar, targetColor) {
     const { targetButtonDiv, barDivider } = createHomeLink(targetColor);
-    console.log(targetButtonDiv, barDivider)
-    console.log('then', utilityButtonBar)
+    // console.log(targetButtonDiv, barDivider)
+    // console.log('then', utilityButtonBar)
 
     //- Probably use mutation observer somehow to make sure its the last element
     if (utilityButtonBar) {
-        console.log("inserting utility button bar")
-        console.log({ "utilitybuttonbar I got": utilityButtonBar })
+        // console.log("inserting utility button bar")
+        // console.log({ "utilitybuttonbar I got": utilityButtonBar })
         utilityButtonBar.insertBefore(barDivider, null);
         utilityButtonBar.insertBefore(targetButtonDiv, null);
     }
@@ -201,7 +201,7 @@ const generalObserver = new MutationObserver(() => {
         // console.log('itemPresent', myWorkdayButton)
 
         if (myWorkdayButton) {
-            console.log('^^^^^^^^^^^^^ehwreheye', utilButtonBar.children, utilButtonBar.children[utilButtonBar.children.length - 1])
+            // console.log('^^^^^^^^^^^^^ehwreheye', utilButtonBar.children, utilButtonBar.children[utilButtonBar.children.length - 1])
             if (utilButtonBar.children[utilButtonBar.children.length - 1].id != 'myWorkday-button-div') {
 
                 utilButtonBar.appendChild(barDivider);
@@ -213,8 +213,8 @@ const generalObserver = new MutationObserver(() => {
             // Getting the base text color for blending in
             const utilButton = utilButtonBar.querySelector('button');
             const utilColor = getComputedStyle(utilButton).color;
-            console.log("util button", utilButton, utilColor);
-            console.log("util button color", utilColor);
+            // console.log("util button", utilButton, utilColor);
+            // console.log("util button color", utilColor);
 
             //- Probably check for my element instead and add it if not there based on Status
             AddLinkToHome(utilButtonBar, utilColor);
@@ -233,24 +233,34 @@ const generalObserver = new MutationObserver(() => {
 
             const signInHelper = document.querySelector('#myWorkday-signIn-helper');
             if (!signInHelper) {
+                console.log('attempting to get creds')
 
-                const element = createAccountHelper('Sign in with MyWorkday', () => {
-                    // chrome.runtime.sendMessage({ action: 'getCredentials' }, (response) => {
-                    //     if (chrome.runtime.lastError) {
-                    //         console.error('Error messaging extension:', chrome.runtime.lastError.message);
-                    //         return;
-                    //     }
+                let username, password;
 
-                    //     if (response && response.username && response.password) {
-                    //         signIn(response.username, response.password, true);
-                    //     } else {
-                    //         console.error('Invalid credentials received from extension');
-                    //     }
-                    // });
-                    signIn('abcdefg@gmail.com', 'Abc123!!', true)
+                chrome.runtime.sendMessage({ action: 'getCredentials' }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('Error messaging extension:', chrome.runtime.lastError.message);
+                        return;
+                    }
+
+                    console.log("I got it@@@@@@@@@@@@@@@@@@@@@@@", response)
+
+                    if (response && response.username && response.password) {
+                        console.log('got response')
+                        username = response.username;
+                        password = response.password;
+                        // signIn(response.username, response.password, true);
+                    } else {
+                        console.error('Invalid credentials received from nativeHost');
+                    }
                 });
+                
+                const element = createAccountHelper('Sign in with MyWorkday', () => {
+                    signIn(username, password, true)
+                });
+
                 element.id = 'myWorkday-signIn-helper';
-                console.log('elemento', element);
+                // console.log('elemento', element);
                 signInFormo.appendChild(element);
             }
 
