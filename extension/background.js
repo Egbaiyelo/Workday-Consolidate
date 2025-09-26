@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         return true;
     }
-    if (message.action === 'getData') {
+    else if (message.action === 'getData') {
 
         chrome.runtime.sendNativeMessage('com.me.my_workday', { action: '/scrape' }, (response) => {
             if (chrome.runtime.lastError) {
@@ -36,5 +36,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         return true;
     }
+    else if (message.action === 'addSite') {
+        chrome.runtime.sendNativeMessage('com.me.my_workday', { action: '/add-site', data: message.data }, (response) => {
+            console.log('addsite command received');
+            if (chrome.runtime.lastError) {
+                console.error('Native messaging error:', chrome.runtime.lastError.message);
+            }
+
+            console.log('Received add site data from native app:', response);
+            sendResponse(response.result);
+        })
+    }
+    else {console.log('unknown command'); sendResponse('command unknown')}
 });
 

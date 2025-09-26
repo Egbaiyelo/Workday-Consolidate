@@ -45,6 +45,8 @@ function addSite() {
         chrome.storage.local.set({ companySites }, function () {
             console.log(`Saved ${companyName}: ${baseURL}`);
         });
+
+        chrome.runtime.sendMessage({action: "addSite", data: {companyName, url: baseURL}});
     });
 
     // Example full format
@@ -357,6 +359,7 @@ function createHomeLink(targetColor = 'white') {
         color: 'rgb(255, 255, 255)',
     })
     targetButton.append(targetIcon);
+    //! extension context invalidated error
     targetButton.append(targetText);
     targetButton.onclick = () => {
         const homeURL = chrome.runtime.getURL('pages/myWorkday-home.html');

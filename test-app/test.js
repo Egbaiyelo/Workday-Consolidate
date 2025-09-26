@@ -55,6 +55,10 @@ function logDebug(message) {
     }
 }
 
+function addSite(){
+    
+}
+
 function readMessage() {
     try {
         const buffer = Buffer.alloc(4);
@@ -129,8 +133,8 @@ function handleCommand(message) {
             logDebug('^--Command: Scrape');
             return {
                 success: true,
-                result: `Scraped data from: ${data?.url || 'unknown URL'}`,
-                command: 'scrape_response',
+                result: `Added site data from: ${data?.url || 'unknown URL'}`,
+                command: 'add_site_response',
                 timestamp: new Date().toISOString()
             };
 
