@@ -11,9 +11,21 @@
 // maybe the action and message should be the same string
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'getCredentials') {
-        // const port = chrome.runtime.connectNative('com.me.my_workday');
 
         chrome.runtime.sendNativeMessage('com.me.my_workday', { action: '/get-credentials' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Native messaging error:', chrome.runtime.lastError.message);
+            }
+
+            console.log('Received from native app:', response);
+            sendResponse(response.result);
+        })
+
+        return true;
+    }
+    if (message.action === 'getData') {
+
+        chrome.runtime.sendNativeMessage('com.me.my_workday', { action: '/scrape' }, (response) => {
             if (chrome.runtime.lastError) {
                 console.error('Native messaging error:', chrome.runtime.lastError.message);
             }

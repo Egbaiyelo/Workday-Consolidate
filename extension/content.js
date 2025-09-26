@@ -4,6 +4,9 @@
 // 
 // 
 
+//-! need a lot better error handling between cocnnections
+
+
 
 //-- 1. ADD SITE
 
