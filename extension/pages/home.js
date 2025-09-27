@@ -1,8 +1,10 @@
 const MAIN = document.querySelector('main');
 
 // Adding back link
+//! Resolve back link
+// document.referer
 document.querySelector('#back-button').addEventListener('click', function () {
-    window.location.href = document.referrer;
+    window.location.href = window.history.back();
 });
 
 // console.log('here')
