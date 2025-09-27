@@ -4,13 +4,19 @@
 // 
 // 
 
+//-! need a lot better error handling between cocnnections
+
+
+
 
 //-- 1. ADD SITE
 
 // The first functionality is adding sites to the watch list, all sites with a workday domain
 // can be tracked and viewed anytime.
-//- Issue -> User might not have mad account on the site yet so I need to confirm that before trying to login
+//- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
 //  --- Also need to handle failed login
+//  --- Maybe check if user ever signed in?
+
 const siteURL = window.location.href;
 
 // Adds site to the watch list
@@ -18,7 +24,7 @@ function addSite() {
     // Company name in format like 
     // bmo.wd3.myworkdayjobs
     const companyName = window.location.hostname.split('.')[0];
-    // console.log('Company name', companyName);
+
 
     const segments = siteURL.split('/');
     const baseURL = segments.slice(0, 5).join('/');
@@ -42,6 +48,9 @@ function addSite() {
         chrome.storage.local.set({ companySites }, function () {
             console.log(`Saved ${companyName}: ${baseURL}`);
         });
+
+        chrome.runtime.sendMessage({action: "addSite", data: {companyName, url: baseURL}});
+
     });
 
     // Example full format
@@ -55,14 +64,13 @@ addSite();
 
 //- Issue -> Cant decide if should wait for autofill and wait for user to click 
 // -(can be messy with other autocompletes I think)
-// - or put a button that does it all, probably put a button at the to let use sign in without the form (from the utility bar)
+// - or put a button that does it all, probably put a button at the top to let use sign in without the form (from the utility bar)
 function siteStatus() {
 
     const observer = new MutationObserver(() => {
 
         // Mostly from sites like Linkedin that lead directly to the application
-        // If user goes there themselves and wants to apply eventually, 
-        // - it still pops up
+        // If user goes there themselves and wants to apply eventually, it still pops up
         const signInForm = document.querySelector('[data-automation-id="signInContent"]');
 
         if (signInForm) {
@@ -75,7 +83,7 @@ function siteStatus() {
             } else if (formType == 'Create Account') {
                 console.log('create account')
                 createAccount("hellp", "word")
-            } 
+            }
             //- Else put button in the utility bbar as said above
 
             // else {
@@ -98,11 +106,12 @@ function siteStatus() {
         // alert("Login/Register form did not appear.");
     }, 5000);
 }
-siteStatus();
+// siteStatus();
 
 // Autofills Sign In info
 //! Assumes all needed elements are present 
-function signIn(email, password) {
+// If signinbutton given, it clicks it
+function signIn(email, password, submit) {
     const emailBox = document.querySelector('[data-automation-id="email"]');
     const passwordBox = document.querySelector('[data-automation-id="password"]');
     if (!emailBox || !passwordBox) { console.log("didnt finds"); return false };
@@ -116,11 +125,31 @@ function signIn(email, password) {
     // sign in for now
     // const signInButton = document.querySelector("[data-automation-id='signInSubmitButton']");
     // signInButton.click();
+
+    // 
+    if (submit) {
+        // console.log('------------------((((((((((signing in');
+        const signInButton = document.querySelector("[data-automation-id='click_filter']");
+        console.log(signInButton);
+        signInButton.click();
+        //- Do for register too
+        
+
+        // signInButton.dispatchEvent(new MouseEvent('click', {
+        //     view: window,
+        //     bubbles: true,
+        //     cancelable: true,
+        //     trusted: true,
+        //     isTrusted: true
+        // }));
+
+
+    }
 }
 
 // Autofills Account info
 //! Assumes all needed elements are present
-function createAccount(email, password) {
+function createAccount(email, password, submit) {
     const emailBox = document.querySelector('[data-automation-id="email"]');
     const passwordBox = document.querySelector('[data-automation-id="password"]');
     const verifyPasswordBox = document.querySelector('[data-automation-id="verifyPassword"]');
@@ -136,44 +165,185 @@ function createAccount(email, password) {
     const createAccountCB = document.querySelector("[data-automation-id='createAccountCheckbox']");
     if (createAccountCB) createAccountCB.checked = true;
 
-    // const createAccountButton = document.querySelector("[data-automation-id='createAccountSubmitButton']");
-    // createAccountButton.click();
-}
-
-
-//-- Add Buttons
-// button for home page
-// Button for sign in / sign up
-
-
-// Adds link to home page
-//! Expects utilitybuttonbar to be present
-function AddLinkToHome(utilityButtonBar) {
-    console.log("$$$$$$$$$$$$$$$$$$$ doingjidajn")
-    const { targetButtonDiv, barDivider } = createHomeLink();
-    console.log(targetButtonDiv, barDivider)
-    
-    //- Probably use mutation observer somehow to make sure its the last element
-    if (utilityButtonBar) {
-        console.log("inserting utility button bar")
-        console.log({ "utilitybutonbar I got": utilityButtonBar })
-        utilityButtonBar.insertBefore(barDivider, null);
-        utilityButtonBar.insertBefore(targetButtonDiv, null);
-        utilityButtonBar.insertBefore(barDivider, null);
+    // 
+    if (submit) {
+        const createAccountButton = document.querySelector("[data-automation-id='createAccountSubmitButton']");
+        createAccountButton.click();
     }
 }
 
-AddLinkToHome(document.querySelector("[data-automation-id='utilityButtonBar']"))
-// 
-function createHomeLink() {
 
-    // Icon and name
+//-- 3.Add MyWorkday Button
+
+// button for home page
+// Button for sign in / sign up
+
+// Issue -> Might move buttons somewhere else, login/register button and then the home button
+
+// Adds link to home page
+//! Expects utilitybuttonbar to be present
+function AddLinkToHome(utilityButtonBar, targetColor) {
+    const { targetButtonDiv, barDivider } = createHomeLink(targetColor);
+    // console.log(targetButtonDiv, barDivider)
+    // console.log('then', utilityButtonBar)
+
+    //- Probably use mutation observer somehow to make sure its the last element
+    if (utilityButtonBar) {
+        // console.log("inserting utility button bar")
+        // console.log({ "utilitybuttonbar I got": utilityButtonBar })
+        utilityButtonBar.insertBefore(barDivider, null);
+        utilityButtonBar.insertBefore(targetButtonDiv, null);
+    }
+}
+
+const generalObserver = new MutationObserver(() => {
+
+    const utilButtonBar = document.querySelector("[data-automation-id='utilityButtonBar']");
+    const signInFormo = document.querySelector("[data-automation-id='signInFormo']");
+
+    if (utilButtonBar) {
+
+        // Given the way the page routes, better to keep checking and ensure adding the link
+        const myWorkdayButton = document.querySelector('#myWorkday-button-div');
+        const barDivider = document.querySelector('#myWorkday-divider-div');
+        //- Ensure its last element and change name from item present
+        // console.log('itemPresent', myWorkdayButton)
+
+        if (myWorkdayButton) {
+            // console.log('^^^^^^^^^^^^^ehwreheye', utilButtonBar.children, utilButtonBar.children[utilButtonBar.children.length - 1])
+            if (utilButtonBar.children[utilButtonBar.children.length - 1].id != 'myWorkday-button-div') {
+
+                utilButtonBar.appendChild(barDivider);
+                utilButtonBar.appendChild(myWorkdayButton);
+            }
+                
+
+        } else {
+            // Getting the base text color for blending in
+            const utilButton = utilButtonBar.querySelector('button');
+            const utilColor = getComputedStyle(utilButton).color;
+            // console.log("util button", utilButton, utilColor);
+            // console.log("util button color", utilColor);
+
+            //- Probably check for my element instead and add it if not there based on Status
+            AddLinkToHome(utilButtonBar, utilColor);
+            // generalObserver.disconnect();
+        }
+    }
+
+    if (signInFormo) {
+
+        //- New flow -> user clicks sign in and can then register or login with myWorkday
+        //- maybe offer to register if not and if user logs in maybe save pass info
+        const formType = document.getElementById('authViewTitle').textContent;
+        if (formType == 'Sign In') {
+            //- onclick signin and then click button
+            // signIn("hellp", "word");
+
+            const signInHelper = document.querySelector('#myWorkday-signIn-helper');
+            if (!signInHelper) {
+                console.log('attempting to get creds')
+
+                let username, password;
+
+                chrome.runtime.sendMessage({ action: 'getCredentials' }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('Error messaging extension:', chrome.runtime.lastError.message);
+                        return;
+                    }
+
+                    console.log("I got it@@@@@@@@@@@@@@@@@@@@@@@", response)
+
+                    if (response && response.username && response.password) {
+                        console.log('got response')
+                        username = response.username;
+                        password = response.password;
+                        // signIn(response.username, response.password, true);
+                    } else {
+                        console.error('Invalid credentials received from nativeHost');
+                    }
+                });
+                
+                const element = createAccountHelper('Sign in with MyWorkday', () => {
+                    signIn(username, password, true)
+                });
+
+                element.id = 'myWorkday-signIn-helper';
+                // console.log('elemento', element);
+                signInFormo.appendChild(element);
+            }
+
+
+        } else if (formType == 'Create Account') {
+            // createAccount("hellp", "word");
+
+            const registerHelper = document.querySelector('#myWorkday-register-helper');
+            if (!registerHelper) {
+                const element = createAccountHelper('Register with MyWorkday', () => { });
+                element.id = 'myWorkday-register-helper';
+                signInFormo.appendChild(element);
+            }
+
+        }
+
+
+    }
+});
+
+//- maybe observe the button bar instead?
+generalObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+//- probably move this above the other method for easy read
+//- Need to add to hamburger menu too in case it gets squashed or on mobile
+
+// returns bardivider and button element
+function createHomeLink(targetColor = 'white') {
+// =======
+// AddLinkToHome(document.querySelector("[data-automation-id='utilityButtonBar']"))
+
+
+    // Icon div and style
     const targetIcon = document.createElement('span');
-    targetIcon.className = "css-53a7ht";
+    // Fetching account icon
+    fetch(chrome.runtime.getURL('icons/account-folder.svg'))
+        .then(res => res.text())
+        .then(svgContent => {
+            Object.assign(targetIcon.style, {
+                display: 'inline-block',
+                margin: '0 3px',
+                opacity: '0.5',
+                color: targetColor,
+                width: 20,
+                height: 20,
+                alt: 'Account icon'
+            });
 
+            targetIcon.innerHTML = svgContent;
+
+            // Overiding size
+            const svg = targetIcon.querySelector('svg');
+            console.log('&&&svg', targetIcon)
+            if (svg) {
+                svg.setAttribute('width', '20');
+                svg.setAttribute('height', '20');
+            }
+        });
+
+    // Button text and style
     const targetText = document.createElement('span');
-    targetText.textContent = "Target";
-    targetText.className = "css-1xtbc5b";
+    targetText.textContent = "MyWorkday";
+    Object.assign(targetText.style, {
+        color: targetColor,
+        fontSize: '12px',
+        fontWeight: '500',
+        lineHeight: '14px',
+        margin: '0px 3px',
+        opacity: '1',
+        textDecorationSkipInk: 'none'
+    })
 
 
     // Button
@@ -182,28 +352,117 @@ function createHomeLink() {
     targetButton.setAttribute('aria-haspopup', 'listbox');
     targetButton.setAttribute('color', '#FFFFFF');
     targetButton.setAttribute('data-automation-id', 'UtilityMenuButton');
-    targetButton.className = "css-myllji";
+    Object.assign(targetButton.style, {
+        WebkitBoxAlign: 'center',
+        alignItems: 'center',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        height: '21px',
+        margin: '0px 9px',
+        padding: '0px',
+        whiteSpace: 'nowrap',
+        textDecorationSkipInk: 'none',
+        color: 'rgb(255, 255, 255)',
+    })
     targetButton.append(targetIcon);
+    //! extension context invalidated error
     targetButton.append(targetText);
+    targetButton.onclick = () => {
+        const homeURL = chrome.runtime.getURL('pages/myWorkday-home.html');
+        window.open(homeURL);
+    };
 
 
-    //
+    // Bardivider and style
+
     const barDivider = document.createElement('div');
     barDivider.setAttribute('data-automation-id', 'utility-button-bar-divider');
     barDivider.setAttribute('color', '#FFFFFF');
-    barDivider.className = 'css-1c0okss';
+    barDivider.id = 'myWorkday-divider-div';
+    // barDivider.setAttribute('color', targetColor);
+    Object.assign(barDivider.style, {
+        backgroundColor: targetColor,
+        height: ' 12px',
+        margin: ' 0px',
+        opacity: ' 0.5',
+        width: ' 1px'
+    })
+
 
     const targetButtonDiv = document.createElement('div');
     targetButtonDiv.setAttribute('data-automation-id', 'utilityButtonTarget');
-    targetButtonDiv.className = "css-wjaruy";
-    // targetButtonDiv.className = 'css-1c0okss';
+    targetButtonDiv.style.height = '21px';
     targetButtonDiv.append(targetButton);
-
-    // console.log({ targetButtonDiv: targetButtonDiv })
+    targetButtonDiv.id = "myWorkday-button-div";
+    Object.assign(targetButtonDiv.style, {
+        //- for style update
+        //- also add hover thingy for style update
+        // border: `1px solid ${targetColor}`,
+        // borderRadius: '2px',
+        // padding: '2px',
+        height: '21px'
+    })
 
     return { targetButtonDiv, barDivider }
 }
 
+//- add button and link later
+function createAccountHelper(helperText, onClickHandler) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'center';
+    container.style.marginTop = '20px';
+
+    // OR Separator
+    const separator = document.createElement('div');
+    separator.style.display = 'flex';
+    separator.style.alignItems = 'center';
+    separator.style.textAlign = 'center';
+    separator.style.color = '#999';
+    separator.style.fontSize = '12px';
+    separator.style.margin = '20px 0';
+    separator.style.width = '100%';
+    separator.innerHTML = `
+        <span style="flex: 1; border-bottom: 1px solid #ccc; margin-right: 10px;"></span>
+        <span>OR</span>
+        <span style="flex: 1; border-bottom: 1px solid #ccc; margin-left: 10px;"></span>
+    `;
+
+    // MyWorkday Sign In Button
+    const button = document.createElement('button');
+    button.textContent = helperText;
+    button.style.padding = '10px 16px';
+    button.style.border = '1px solid #ccc';
+    button.style.borderRadius = '4px';
+    button.style.backgroundColor = '#f7f7f7';
+    button.style.cursor = 'pointer';
+    button.style.fontWeight = 'bold';
+    button.style.color = '#333';
+    button.style.display = 'flex';
+    button.style.alignItems = 'center';
+    button.style.gap = '8px';
+
+    // icon
+    // const icon = document.createElement('img');
+    // icon.src = chrome.runtime.getURL('icons/workday-icon.svg'); 
+    // icon.alt = 'Workday icon';
+    // icon.style.width = '20px';
+    // icon.style.height = '20px';
+    // button.prepend(icon);
+
+    // signin/register event listener
+    if (onClickHandler) {
+        button.addEventListener('click', onClickHandler);
+    }
+
+    container.appendChild(separator);
+    container.appendChild(button);
+
+    return container;
+}
 
 
 
@@ -224,12 +483,13 @@ function uploadFile() {
             input.files = dataTransfer.files;
             input.dispatchEvent(new Event('change', { bubbles: true }));
 
+
             observer.disconnect();
         }
     });
 
     observer.observe(document.body, {
-        childList: true, 
+        childList: true,
         subtree: true
     })
 
@@ -271,6 +531,7 @@ uploadFile();
 // })
 
 // observer.observe(document.body, { subtree: true, childList: true });
+
 
 
 // function waitForElement(selector, timeout = 5000) {

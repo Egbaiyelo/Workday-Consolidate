@@ -3,6 +3,50 @@ const path = require('path');
 
 //! Absolute path for deployment
 const DEBUG_LOG = path.join(__dirname, 'debug.log');
+const DATA_BOOK = path.join(__dirname, 'data.json');
+
+function readData() {
+    try {
+        const jsonData = fs.readFileSync(DATA_BOOK, 'utf8');
+        const data = JSON.parse(jsonData);
+        return data;
+
+    } catch (err) {
+        //- handle later
+        console.error('Error reading or parsing data.json:', err);
+    }
+}
+const DATA = readData();
+const SAMPLE_SCRAPE = [{
+    site: "mvidia", data: [{
+        job_title: "developer",
+        job_req: "19342",
+        application_status: "accepted",
+        date_submitted: "324292"
+    },
+    {
+        job_title: "engineer",
+        job_req: "19342",
+        application_status: "accepted",
+        date_submitted: "324292"
+    }]
+},
+{
+    site: "foogle", data: [{
+        job_title: "senior developer",
+        job_req: "19342",
+        application_status: "accepted",
+        date_submitted: "324292"
+    },
+    {
+        job_title: "senior engineer",
+        job_req: "19342",
+        application_status: "accepted",
+        date_submitted: "324292"
+    }]
+}
+]
+
 
 function logDebug(message) {
     try {
@@ -11,6 +55,11 @@ function logDebug(message) {
         // Can't log error - risk of disconnection
     }
 }
+
+function addSite(){
+    
+}
+
 
 function readMessage() {
     try {
@@ -70,25 +119,58 @@ function sendMessage(msg) {
 function handleCommand(message) {
     logDebug(`Processing command: ${JSON.stringify(message)}`);
 
-    const { _command, _data } = message;
+    const { action, data } = message;
 
-    switch (_command) {
+    switch (action) {
         case '/scrape':
             logDebug('^--Command: Scrape');
             return {
                 success: true,
-                result: `Scraped data from: ${_data?.url || 'unknown URL'}`,
+                result: SAMPLE_SCRAPE,
                 command: 'scrape_response',
                 timestamp: new Date().toISOString()
             };
+
+        case '/add-site':
+            logDebug('^--Command: Scrape');
+            return {
+                success: true,
+                result: `Added site data from: ${data?.url || 'unknown URL'}`,
+                command: 'add_site_response',
+                timestamp: new Date().toISOString()
+            };
+
+        case '/get-credentials':
+            logDebug('^--Command: getcredentials');
+            return {
+                success: true,
+                result: {
+                    username: DATA.username,
+                    password: DATA.password
+                },
+                command: 'get-credentials-response',
+                timestamp: new Date().toISOString()
+            }
+
+//         case '/scrape':
+//             logDebug('^--Command: Scrape');
+//             return {
+//                 success: true,
+//                 result: `Scraped data from: ${data?.url || 'unknown URL'}`,
+
+//                 command: 'scrape_response',
+//                 timestamp: new Date().toISOString()
+//             };
 
         default:
             logDebug('^--Command: UnKnown');
             return {
                 success: true,
-                result: 'Hello from native host!',
+                result: 'Hello from native host! lol ',
                 command: 'default_response',
-                receivedCommand: _command,
+                receivedCommand: action,
+                got: { message, action, data },
+
                 timestamp: new Date().toISOString()
             };
     }
@@ -98,14 +180,16 @@ async function startMessageLoop() {
     logDebug('Native host starting up');
 
     try {
-        while (true) {  
+        while (true) {
+
             logDebug('Waiting for message...');
 
             const msg = readMessage();
 
             if (msg === null) {
                 logDebug('Received null message, continuing...');
-                await new Promise(resolve => setTimeout(resolve, 100)); 
+                await new Promise(resolve => setTimeout(resolve, 100));
+
                 continue;
             }
 
