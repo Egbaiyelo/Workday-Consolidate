@@ -26,5 +26,17 @@
     ],
     "host_permissions": [
         "<all_urls>"
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "icons/*", 
+                "pages/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+
     ]
 }
