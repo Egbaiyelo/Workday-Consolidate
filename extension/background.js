@@ -50,3 +50,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     else {console.log('unknown command'); sendResponse('command unknown')}
 });
 
+

@@ -47,6 +47,7 @@ const SAMPLE_SCRAPE = [{
 }
 ]
 
+
 function logDebug(message) {
     try {
         fs.appendFileSync(DEBUG_LOG, `[${new Date().toISOString()}] ${message}\n`);
@@ -58,6 +59,7 @@ function logDebug(message) {
 function addSite(){
     
 }
+
 
 function readMessage() {
     try {
@@ -149,14 +151,16 @@ function handleCommand(message) {
                 command: 'get-credentials-response',
                 timestamp: new Date().toISOString()
             }
-        case '/scrape':
-            logDebug('^--Command: Scrape');
-            return {
-                success: true,
-                result: `Scraped data from: ${data?.url || 'unknown URL'}`,
-                command: 'scrape_response',
-                timestamp: new Date().toISOString()
-            };
+
+//         case '/scrape':
+//             logDebug('^--Command: Scrape');
+//             return {
+//                 success: true,
+//                 result: `Scraped data from: ${data?.url || 'unknown URL'}`,
+
+//                 command: 'scrape_response',
+//                 timestamp: new Date().toISOString()
+//             };
 
         default:
             logDebug('^--Command: UnKnown');
@@ -166,6 +170,7 @@ function handleCommand(message) {
                 command: 'default_response',
                 receivedCommand: action,
                 got: { message, action, data },
+
                 timestamp: new Date().toISOString()
             };
     }
@@ -176,6 +181,7 @@ async function startMessageLoop() {
 
     try {
         while (true) {
+
             logDebug('Waiting for message...');
 
             const msg = readMessage();
@@ -183,6 +189,7 @@ async function startMessageLoop() {
             if (msg === null) {
                 logDebug('Received null message, continuing...');
                 await new Promise(resolve => setTimeout(resolve, 100));
+
                 continue;
             }
 

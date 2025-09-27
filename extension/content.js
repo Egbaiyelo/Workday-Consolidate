@@ -8,6 +8,7 @@
 
 
 
+
 //-- 1. ADD SITE
 
 // The first functionality is adding sites to the watch list, all sites with a workday domain
@@ -15,6 +16,7 @@
 //- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
 //  --- Also need to handle failed login
 //  --- Maybe check if user ever signed in?
+
 const siteURL = window.location.href;
 
 // Adds site to the watch list
@@ -22,6 +24,7 @@ function addSite() {
     // Company name in format like 
     // bmo.wd3.myworkdayjobs
     const companyName = window.location.hostname.split('.')[0];
+
 
     const segments = siteURL.split('/');
     const baseURL = segments.slice(0, 5).join('/');
@@ -47,6 +50,7 @@ function addSite() {
         });
 
         chrome.runtime.sendMessage({action: "addSite", data: {companyName, url: baseURL}});
+
     });
 
     // Example full format
@@ -282,6 +286,7 @@ const generalObserver = new MutationObserver(() => {
 
         }
 
+
     }
 });
 
@@ -296,6 +301,9 @@ generalObserver.observe(document.body, {
 
 // returns bardivider and button element
 function createHomeLink(targetColor = 'white') {
+// =======
+// AddLinkToHome(document.querySelector("[data-automation-id='utilityButtonBar']"))
+
 
     // Icon div and style
     const targetIcon = document.createElement('span');
@@ -368,6 +376,7 @@ function createHomeLink(targetColor = 'white') {
 
 
     // Bardivider and style
+
     const barDivider = document.createElement('div');
     barDivider.setAttribute('data-automation-id', 'utility-button-bar-divider');
     barDivider.setAttribute('color', '#FFFFFF');
@@ -474,6 +483,7 @@ function uploadFile() {
             input.files = dataTransfer.files;
             input.dispatchEvent(new Event('change', { bubbles: true }));
 
+
             observer.disconnect();
         }
     });
@@ -521,6 +531,7 @@ uploadFile();
 // })
 
 // observer.observe(document.body, { subtree: true, childList: true });
+
 
 
 // function waitForElement(selector, timeout = 5000) {
