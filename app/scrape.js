@@ -15,18 +15,31 @@ const account = accountMod.getData();
  * {
  *     username:
  *     password:
- *     websites:
+ *     websites: obj*
+ *     contexes: obj* -> { [username, pass, websites], ... }
  * }
  */
 
 
-// Scrapes the entire main context
+
+/**
+ * @typedef {object} CompanyJobStatusObject
+ * @property {object} active
+ * @property {object} inactive
+ */
+
+/**
+ * Calls the respective scrapper to scrape the relevant information from the main context
+ * 
+ * @returns {[]} An array of company job status objects from each site
+ */
 async function webScraper() {
     const browser = await puppeteer.launch({ headless: false, dumpio: true, args: ['--window-size=1400,900'] });
 
     //- parse contexes? - if there be any
     //- Needs rate limiting! 10 at a time?
     for (const site of Object.values(account.websites)) {
+        //- scraping '/userhome' because thats user home page data
         await scrapper(browser, site + "/userHome");
     }
 
@@ -49,12 +62,18 @@ async function sayhello() {
 }
 
 
-// 
+/**
+ * 
+ * @param {*} browser The browser object for the scrapping tool
+ * @param {string} accountSite The account site to be scraped
+ * @returns 
+ */
 async function scrapper(browser, accountSite) {
 
-    console.log("doing", accountSite)
+    console.log("Scraping", accountSite)
 
-    if (!accountSite) { console.log("Nothing to scrape"); return };
+    if (!accountSite) { console.log("Nothing to scrape at:", accountSite); return };
+
     try {
         const page = await browser.newPage();
         await page.setViewport({
@@ -185,6 +204,9 @@ async function scrapper(browser, accountSite) {
     }
 };
 
+/**
+ * Testing Object
+ */
 (async function () {
 
     const browsertry = await puppeteer.launch({ headless: false, dumpio: true });
@@ -199,11 +221,16 @@ function ensureSignIn(page) {
 
 // Should maybe reverse the logic, check if signed in then sign in? check if applications then get applications
 
-// Reduce HTML to Json
+/**
+ * Reads the HTML and scrapes it for job status information
+ * @param {string} site The site url
+ * @param {HTMLElement} containerHTML The HTML to be scraped notably the tasklistcontainer element
+ * @returns {JSON} The scraped data
+ */
 function readApplicationStatus(site, containerHTML) {
 
 
-    // console.log("gor\n==============================", containerHTML);
+    // console.log("read application status\n==============================", containerHTML);
     // console.log("\n============================")
     // const parser = new DOMParser();
     // const doc = parser.parseFromString(containerHTML, 'text/html');

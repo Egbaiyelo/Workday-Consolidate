@@ -8,6 +8,11 @@ const { addSite, addContext } = require('account.js');
 //! Absolute path for deployment
 const DEBUG_LOG = path.join(__dirname, 'debug.log');
 
+/**
+ * Logs the operational status to the debug file,
+ * Logging errors risk disconnection during deployment
+ * @param {*} message 
+ */
 function logDebug(message) {
     try {
         fs.appendFileSync(DEBUG_LOG, `[${new Date().toISOString()}] ${message}\n`);
@@ -16,6 +21,10 @@ function logDebug(message) {
     }
 }
 
+/**
+ * 
+ * @returns 
+ */
 function readMessage() {
     try {
         const buffer = Buffer.alloc(4);
@@ -52,6 +61,10 @@ function readMessage() {
     }
 }
 
+/**
+ * 
+ * @param {*} msg 
+ */
 function sendMessage(msg) {
     try {
         const json = JSON.stringify(msg);
@@ -71,6 +84,11 @@ function sendMessage(msg) {
     }
 }
 
+/**
+ * 
+ * @param {*} message 
+ * @returns 
+ */
 function handleCommand(message) {
     logDebug(`Processing command: ${JSON.stringify(message)}`);
 
@@ -98,6 +116,9 @@ function handleCommand(message) {
     }
 }
 
+/**
+ * 
+ */
 async function startMessageLoop() {
     logDebug('Native host starting up');
 
@@ -135,16 +156,25 @@ async function startMessageLoop() {
     logDebug('Native host shutting down');
 }
 
+/**
+ * 
+ */
 process.on('SIGINT', () => {
     logDebug('SIGINT received, shutting down\n');
     process.exit(0);
 });
 
+/**
+ * 
+ */
 process.on('SIGTERM', () => {
     logDebug('SIGTERM received, shutting down\n');
     process.exit(0);
 });
 
+/**
+ * 
+ */
 process.on('exit', (code) => {
     logDebug(`Process exiting with code: ${code}\n`);
 });
