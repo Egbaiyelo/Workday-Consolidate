@@ -368,7 +368,7 @@ function createHomeLink(targetColor = 'white') {
     //! extension context invalidated error
     targetButton.append(targetText);
     targetButton.onclick = () => {
-        const homeURL = chrome.runtime.getURL('pages/myWorkday-home.html');
+        const homeURL = chrome.runtime.getURL('pages/home.html');
         window.open(homeURL);
     };
 

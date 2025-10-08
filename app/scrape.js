@@ -1,5 +1,5 @@
 
-
+// might turn into an object
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const jsdom = require('jsdom');
@@ -53,6 +53,9 @@ async function webScraper() {
     await browser.close();
     process.exit(0);
 };
+
+webScraper();
+
 
 async function sayhello() {
     return {
@@ -153,7 +156,7 @@ async function scrapper(browser, accountSite) {
 
         const applications = await page.$('[data-automation-id="applicationsSectionHeading"]');
         const applicationsHTML = await applications.evaluate(el => el.outerHTML);
-        console.log(applicationsHTML)
+        // console.log(applicationsHTML)
         const jsonofall = readApplicationStatus(accountSite, applicationsHTML);
         console.log(jsonofall)
 
@@ -207,11 +210,11 @@ async function scrapper(browser, accountSite) {
 /**
  * Testing Object
  */
-(async function () {
+// (async function () {
 
-    const browsertry = await puppeteer.launch({ headless: false, dumpio: true });
-    scrapper(browsertry, Object.values(account.websites)[3] + "/userHome");
-})();
+//     const browsertry = await puppeteer.launch({ headless: false, dumpio: true });
+//     scrapper(browsertry, Object.values(account.websites)[3] + "/userHome");
+// })();
 
 
 function ensureSignIn(page) {

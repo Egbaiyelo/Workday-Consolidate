@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const dotenv = require('dotenv');
 const datafile = "data.json"
 const filepath = path.join(__dirname, datafile);
 

@@ -1,13 +1,11 @@
 
 node_modules/
 
-
+# Temp files
 *.temp.*
 *.log
 **/later/
-test/
 
-# For now
 
 # To store handling (encryption, storagr) of passwords
 credentials.js
@@ -15,8 +13,7 @@ credentials.js
 # To manage access (ensure logged in or signed up) and manage user data
 # account.js
 
-
-
+# Auxilliary files for html viewing (dont think I should commit these)
 page.md
 page-snapshot.html
 element-snapshot.html
