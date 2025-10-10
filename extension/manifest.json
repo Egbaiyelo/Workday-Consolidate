@@ -25,18 +25,17 @@
         "nativeMessaging"
     ],
     "host_permissions": [
-        "<all_urls>"
+        "*://*.myworkdayjobs.com/*"
     ],
     "web_accessible_resources": [
         {
             "resources": [
-                "icons/*", 
+                "icons/*",
                 "pages/*"
             ],
             "matches": [
                 "<all_urls>"
             ]
         }
-
     ]
 }
