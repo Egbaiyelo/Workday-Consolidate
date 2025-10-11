@@ -1,5 +1,8 @@
 
 // might turn into an object
+
+// null check evaluates and clicks
+
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const jsdom = require('jsdom');
@@ -34,27 +37,31 @@ const account = accountMod.getData();
  * @returns {[]} An array of company job status objects from each site
  */
 async function webScraper() {
-    const browser = await puppeteer.launch({ headless: false, dumpio: true, args: ['--window-size=1400,900'] });
+    const browser = await puppeteer.launch({ headless: 'new', dumpio: true, args: ['--window-size=1400,900', '--disable-background-timer-throttling'] });
 
     //- parse contexes? - if there be any
     //- Needs rate limiting! 10 at a time?
-    for (const site of Object.values(account.websites)) {
-        //- scraping '/userhome' because thats user home page data
-        await scrapper(browser, site + "/userHome");
-    }
-
-    // const batchSize = 10;
-    // for (let i = 0; i < context.websites.length; i += batchSize) {
-    //     const batch = context.websites.slice(i, i + batchSize);
-    //     await Promise.all(batch.map(site => scrapper(browser, site)));
+    // for (const site of Object.values(account.websites)) {
+    //     //- scraping '/userhome' because thats user home page data
+    //     await scrapper(browser, site + "/userHome");
     // }
+    console.log("starting", Object.keys(account.websites).length)
+
+    const batchSize = 4;
+    // Object.keys(account.websites).length
+    for (let i = 0; i < 5; i += batchSize) {
+        console.log("paral");
+        const batch = Object.values(account.websites).slice(i, i + batchSize);
+        console.log(batch)
+        await Promise.all(batch.map(site => scrapper(browser, site + "/userHome")));
+    }
 
     // Cleanup
     await browser.close();
     process.exit(0);
 };
 
-webScraper();
+(async function () { await webScraper() })();
 
 
 async function sayhello() {
@@ -82,6 +89,15 @@ async function scrapper(browser, accountSite) {
         await page.setViewport({
             width: 1400,
             height: 900
+        });
+
+        await page.setRequestInterception(true);
+        page.on('request', (request) => {
+            if (['image', 'font', 'media'].includes(request.resourceType())) {
+                request.abort();
+            } else {
+                request.continue();
+            }
         });
 
         await page.goto(accountSite, { waitUntil: 'networkidle0' });
@@ -113,10 +129,18 @@ async function scrapper(browser, accountSite) {
 
             const submitBut = await page.waitForSelector('[data-automation-id="signInSubmitButton"]');
 
+            page.bringToFront();
             await Promise.all([
                 page.waitForNavigation({ waitUntil: 'networkidle0' }),
                 submitBut.click()
             ]);
+
+            // await submitBut.click()
+
+            // await page.evaluate(() => {
+            //     Object.defineProperty(document, 'hidden', { value: false });
+            //     document.dispatchEvent(new Event('visibilitychange'));
+            // });
 
             console.log("log in Success ______check");
 
@@ -154,13 +178,14 @@ async function scrapper(browser, accountSite) {
 
         console.log("===========================\n\n\n\n===========================");
 
-        const applications = await page.$('[data-automation-id="applicationsSectionHeading"]');
+        const applications = await page.waitForSelector('[data-automation-id="applicationsSectionHeading"]');
+        if (!applications) console.log("no applications")
         const applicationsHTML = await applications.evaluate(el => el.outerHTML);
         // console.log(applicationsHTML)
-        const jsonofall = readApplicationStatus(accountSite, applicationsHTML);
+        const jsonofall = await readApplicationStatus(accountSite, applicationsHTML);
         console.log(jsonofall)
 
-        await new Promise(r => setTimeout(r, 30_000));
+        // await new Promise(r => setTimeout(r, 30_000));
 
         // Try get jobs
         // try {
@@ -173,7 +198,7 @@ async function scrapper(browser, accountSite) {
         //     else { console.log("Get Jobs error"); console.log(error) };
         // }
 
-        console.log("success");
+        // console.log("success");
 
         //- Maybe try get css later
         // const computedStyles = await page.evaluate(() => {
@@ -200,6 +225,7 @@ async function scrapper(browser, accountSite) {
         //     }
         // }
 
+        await page.close();
         console.log("success");
     }
     catch (error) {
@@ -230,7 +256,7 @@ function ensureSignIn(page) {
  * @param {HTMLElement} containerHTML The HTML to be scraped notably the tasklistcontainer element
  * @returns {JSON} The scraped data
  */
-function readApplicationStatus(site, containerHTML) {
+async function readApplicationStatus(site, containerHTML) {
 
 
     // console.log("read application status\n==============================", containerHTML);

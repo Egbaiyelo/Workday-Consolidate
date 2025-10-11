@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const dotenv = require('dotenv');
+// const dotenv = require('dotenv');
 const datafile = "data.json"
 const filepath = path.join(__dirname, datafile);
 
@@ -37,6 +37,8 @@ function save() {
  * @param {string} lang The language (to be part of the link)
  * @returns {string} The appropriate format
  */
+
+// prefer links with en-us
 function ensureFormat(site, lang = "en-US") {
     //- maybe add \
     const siteData = site.split('/').filter(Boolean);
