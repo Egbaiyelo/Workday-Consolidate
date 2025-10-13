@@ -14,11 +14,18 @@ Portals like myWordayJobs don't provide a proper frontend
 
 This project strives to fix this. It provides an extension and a native host application to provide a unified interface for jobseekers to breeze through these roadblocks.
 
-
+## Key-features
 The workconsole would allow
 - Easy registration/ login or automatic authentication
 - A dashboard for all job statuses
 - Form fill helpers
+
+To install the extension download the extension folder
+- Open the browser extensions environment and click developer mode
+- CLick load unpacked and select the extension in your file explorer.
+
+The extension can function to some extent without the app. It does
+- 
 
 
 To install the app, you need to set it up yourself as it does not yet have an installer.
