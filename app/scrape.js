@@ -1,40 +1,68 @@
+
+// might turn into an object
+
+// null check evaluates and clicks
+
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const jsdom = require('jsdom');
-const account = require('./credentials');
+const path = require('path');
+const accountpath = path.join(__dirname, "account.js");
+const accountMod = require(accountpath);
+const account = accountMod.getData();
 
 // account format 
+//- If there is an account with different email needing to be tracked Id have a new value to say that,
+// - so now the contexts are subsidiary and there is one main context, where more can be added on
 /**
  * {
- *      context: { // group of websites with same email and password, usually just one
- *          email:
- *          password:
- *          websites:
- *      }, ...
+ *     username:
+ *     password:
+ *     websites: obj*
+ *     contexes: obj* -> { [username, pass, websites], ... }
  * }
  */
 
-const context = account.me;
 
-async function webScraper(context) {
-    const browser = await puppeteer.launch({ headless: false, dumpio: true });
 
-    //- parse contexes?
+/**
+ * @typedef {object} CompanyJobStatusObject
+ * @property {object} active
+ * @property {object} inactive
+ */
+
+/**
+ * Calls the respective scrapper to scrape the relevant information from the main context
+ * 
+ * @returns {[]} An array of company job status objects from each site
+ */
+async function webScraper() {
+    const browser = await puppeteer.launch({ headless: 'new', dumpio: true, args: ['--window-size=1400,900', '--disable-background-timer-throttling'] });
+
+    //- parse contexes? - if there be any
     //- Needs rate limiting! 10 at a time?
-    for (const site of context.websites) {
-        await scrapper(browser, site);
-    }
-
-    // const batchSize = 10;
-    // for (let i = 0; i < context.websites.length; i += batchSize) {
-    //     const batch = context.websites.slice(i, i + batchSize);
-    //     await Promise.all(batch.map(site => scrapper(browser, site)));
+    // for (const site of Object.values(account.websites)) {
+    //     //- scraping '/userhome' because thats user home page data
+    //     await scrapper(browser, site + "/userHome");
     // }
+    console.log("starting", Object.keys(account.websites).length)
+
+    const batchSize = 4;
+    // Object.keys(account.websites).length
+    for (let i = 0; i < 5; i += batchSize) {
+        console.log("paral");
+        const batch = Object.values(account.websites).slice(i, i + batchSize);
+        console.log(batch)
+        await Promise.all(batch.map(site => scrapper(browser, site + "/userHome")));
+    }
 
     // Cleanup
     await browser.close();
     process.exit(0);
 };
+
+(async function () { await webScraper() })();
+
 
 async function sayhello() {
     return {
@@ -43,14 +71,34 @@ async function sayhello() {
     }
 }
 
-module.exports = { sayhello, webScraper }
 
-
+/**
+ * 
+ * @param {*} browser The browser object for the scrapping tool
+ * @param {string} accountSite The account site to be scraped
+ * @returns 
+ */
 async function scrapper(browser, accountSite) {
 
-    if (!accountSite) return;
+    console.log("Scraping", accountSite)
+
+    if (!accountSite) { console.log("Nothing to scrape at:", accountSite); return };
+
     try {
         const page = await browser.newPage();
+        await page.setViewport({
+            width: 1400,
+            height: 900
+        });
+
+        await page.setRequestInterception(true);
+        page.on('request', (request) => {
+            if (['image', 'font', 'media'].includes(request.resourceType())) {
+                request.abort();
+            } else {
+                request.continue();
+            }
+        });
 
         await page.goto(accountSite, { waitUntil: 'networkidle0' });
 
@@ -69,22 +117,30 @@ async function scrapper(browser, accountSite) {
 
             // Enter Email
             const emailBut = await page.waitForSelector('[data-automation-id="email"]');
-            await page.type('[data-automation-id="email"]', context.email, { delay: 50 });
+            await page.type('[data-automation-id="email"]', account.username, { delay: 50 });
             const butHTML = await emailBut.evaluate(el => el.outerHTML);
             // console.log("html", butHTML)
 
             // Enter Password
             const passBut = await page.waitForSelector('[data-automation-id="password"]');
-            await page.type('[data-automation-id="password"]', context.password, { delay: 50 });
+            await page.type('[data-automation-id="password"]', account.password, { delay: 50 });
             const passHTML = await passBut.evaluate(el => el.outerHTML);
             // console.log("html", passHTML);
 
             const submitBut = await page.waitForSelector('[data-automation-id="signInSubmitButton"]');
 
+            page.bringToFront();
             await Promise.all([
                 page.waitForNavigation({ waitUntil: 'networkidle0' }),
                 submitBut.click()
             ]);
+
+            // await submitBut.click()
+
+            // await page.evaluate(() => {
+            //     Object.defineProperty(document, 'hidden', { value: false });
+            //     document.dispatchEvent(new Event('visibilitychange'));
+            // });
 
             console.log("log in Success ______check");
 
@@ -108,8 +164,9 @@ async function scrapper(browser, accountSite) {
         goHomeBut.click();
         // console.log("went home");
 
-        // Expand applications Sections div
-        await page.click('[data-automation-id="applicationsSectionHeading-CHEVRON"]');
+        // Expand applications Sections div 
+        //- I guess only for smaller screens?
+        // await page.click('[data-automation-id="applicationsSectionHeading-CHEVRON"]');
 
         // Just for debugging
         // const pageContent = await page.content();
@@ -121,13 +178,14 @@ async function scrapper(browser, accountSite) {
 
         console.log("===========================\n\n\n\n===========================");
 
-        const applications = await page.$('[data-automation-id="applicationsSectionHeading"]');
+        const applications = await page.waitForSelector('[data-automation-id="applicationsSectionHeading"]');
+        if (!applications) console.log("no applications")
         const applicationsHTML = await applications.evaluate(el => el.outerHTML);
-        console.log(applicationsHTML)
-        const jsonofall = readApplicationStatus(accountSite, applicationsHTML);
+        // console.log(applicationsHTML)
+        const jsonofall = await readApplicationStatus(accountSite, applicationsHTML);
         console.log(jsonofall)
 
-        await new Promise(r => setTimeout(r, 30_000));
+        // await new Promise(r => setTimeout(r, 30_000));
 
         // Try get jobs
         // try {
@@ -140,7 +198,7 @@ async function scrapper(browser, accountSite) {
         //     else { console.log("Get Jobs error"); console.log(error) };
         // }
 
-        console.log("success");
+        // console.log("success");
 
         //- Maybe try get css later
         // const computedStyles = await page.evaluate(() => {
@@ -167,6 +225,7 @@ async function scrapper(browser, accountSite) {
         //     }
         // }
 
+        await page.close();
         console.log("success");
     }
     catch (error) {
@@ -174,7 +233,14 @@ async function scrapper(browser, accountSite) {
     }
 };
 
-// scrapper(account.test.websites[0]);
+/**
+ * Testing Object
+ */
+// (async function () {
+
+//     const browsertry = await puppeteer.launch({ headless: false, dumpio: true });
+//     scrapper(browsertry, Object.values(account.websites)[3] + "/userHome");
+// })();
 
 
 function ensureSignIn(page) {
@@ -184,12 +250,17 @@ function ensureSignIn(page) {
 
 // Should maybe reverse the logic, check if signed in then sign in? check if applications then get applications
 
-// Reduce HTML to Json
-function readApplicationStatus(site, containerHTML) {
+/**
+ * Reads the HTML and scrapes it for job status information
+ * @param {string} site The site url
+ * @param {HTMLElement} containerHTML The HTML to be scraped notably the tasklistcontainer element
+ * @returns {JSON} The scraped data
+ */
+async function readApplicationStatus(site, containerHTML) {
 
-    
-    console.log("gor\n==============================",containerHTML);
-    console.log("\n============================")
+
+    // console.log("read application status\n==============================", containerHTML);
+    // console.log("\n============================")
     // const parser = new DOMParser();
     // const doc = parser.parseFromString(containerHTML, 'text/html');
     const { JSDOM } = jsdom;
@@ -197,10 +268,16 @@ function readApplicationStatus(site, containerHTML) {
 
     function getRows(panelId) {
         const panel = doc.window.document.querySelector(`${panelId}`);
-        if (!panel) return []; 
+        if (!panel) return [];
 
         const rows = [];
         panel.querySelectorAll('tr[data-automation-id="taskListRow"]').forEach(row => {
+
+            //- Working this out, dont trust working with generated class names for getting data
+            // const [jobTitle, jobReq, status, date, _] = [...row.children].map(item => item.textContent.trim());
+            // const data = [jobTitle, jobReq, status, date];
+            // console.log("here children", data);
+
             const jobTitle = row.querySelector('[data-automation-id="applicationTitle"]')?.textContent.trim();
             const jobReq = row.querySelector('.css-x4yhc3')?.textContent.trim();
             const status = row.querySelector('[data-automation-id="applicationStatus"]')?.textContent.trim();
@@ -232,3 +309,7 @@ function readApplicationStatus(site, containerHTML) {
     return result;
     //- Maybe get tasks too???
 }
+
+
+
+module.exports = { sayhello, webScraper }

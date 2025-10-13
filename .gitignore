@@ -1,23 +1,22 @@
 
 node_modules/
 .vscode/
+changed-*/
+nativeMessenger-Vanilla/
 
-
+# Temp files
 *.temp.*
 *.log
 **/later/
-test/
 
-# For now
 
 # To store handling (encryption, storagr) of passwords
 credentials.js
 
 # To manage access (ensure logged in or signed up) and manage user data
-account.js
+# account.js
 
-
-
+# Auxilliary files for html viewing (dont think I should commit these)
 page.md
 page-snapshot.html
 element-snapshot.html
@@ -26,6 +25,6 @@ element-snapshot.html
 
 data.json
 
-
+# Log files
+*.log
 html-snapshots/
-

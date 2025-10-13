@@ -69,6 +69,80 @@ function addSite() {
 //- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
 //  --- Also need to handle failed login
 //  --- Maybe check if user ever signed in?
+    const segments = siteURL.split('/');
+    const baseURL = segments.slice(0, 5).join('/');
+
+    // Save to local
+    // Redundant storage, given some may not have the app or maybe the app isnt working, it at least keeps them 
+    // in local storage first
+    //- maybe use sync instead
+    chrome.storage.local.get("companySites", function (result) {
+        const companySites = result.companySites || {};
+        console.log("result, companysites", result, companySites);
+
+        // Shouldn't have duplicates but just checking
+        // If the company name exists but doesnt have the same data as the baseURL
+        if (companySites[companyName] && companySites[companyName] != baseURL) {
+            console.log("!duplicate");
+            console.log(companySites[companyName])
+        }
+        companySites[companyName] = baseURL;
+
+        chrome.storage.local.set({ companySites }, function () {
+            console.log(`Saved ${companyName}: ${baseURL}`);
+        });
+
+        chrome.runtime.sendMessage({action: "addSite", data: {companyName, url: baseURL}});
+
+    });
+
+    // Example full format
+    // "https://bmo.wd3.myworkdayjobs.com/en-US/External/userHome"
+}
+// siteStatus();
+
+// Autofills Sign In info
+//! Assumes all needed elements are present 
+// If signinbutton given, it clicks it
+function signIn(email, password, submit) {
+    const emailBox = document.querySelector('[data-automation-id="email"]');
+    const passwordBox = document.querySelector('[data-automation-id="password"]');
+    if (!emailBox || !passwordBox) { console.log("didnt finds"); return false };
+
+    emailBox.value = email;
+    emailBox.dispatchEvent(new Event('input', { bubbles: true }));
+    passwordBox.value = password;
+    passwordBox.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // await user sign in? or ask specifically ahead of time
+    // sign in for now
+    // const signInButton = document.querySelector("[data-automation-id='signInSubmitButton']");
+    // signInButton.click();
+
+    // 
+    if (submit) {
+        // console.log('------------------((((((((((signing in');
+        const signInButton = document.querySelector("[data-automation-id='click_filter']");
+        console.log(signInButton);
+        signInButton.click();
+        //- Do for register too
+        
+
+        // signInButton.dispatchEvent(new MouseEvent('click', {
+        //     view: window,
+        //     bubbles: true,
+        //     cancelable: true,
+        //     trusted: true,
+        //     isTrusted: true
+        // }));
+
+addSite();
+
+    }
+}
+
+//-- 2.LOGIN
+
 //- Issue -> Cant decide if should wait for autofill and wait for user to click 
 // -(can be messy with other autocompletes I think)
 // - or put a button that does it all, probably put a button at the top to let use sign in without the form (from the utility bar)
@@ -194,7 +268,13 @@ function AddLinkToHome(utilityButtonBar, targetColor) {
         utilityButtonBar.insertBefore(barDivider, null);
         utilityButtonBar.insertBefore(targetButtonDiv, null);
     }
-}
+});
+
+//- maybe observe the button bar instead?
+generalObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
 
 let username, password;
 
@@ -396,7 +476,7 @@ function createHomeLink(targetColor = 'white') {
     //! extension context invalidated error
     targetButton.append(targetText);
     targetButton.onclick = () => {
-        const homeURL = chrome.runtime.getURL('pages/myWorkday-home.html');
+        const homeURL = chrome.runtime.getURL('pages/home.html');
         window.open(homeURL);
     };
 
