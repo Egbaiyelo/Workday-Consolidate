@@ -8,6 +8,13 @@
 // };
 
 
+// touch icon to view page
+// chrome.action.onClicked.addListener((tab) => {
+
+// })
+
+const nativeHost = 'com.me.my_workday';
+
 // maybe the action and message should be the same string
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'getCredentials') {
@@ -46,6 +53,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             console.log('Received add site data from native app:', response);
             sendResponse(response.result);
         })
+
+        return true;
     }
     else {console.log('unknown command'); sendResponse('command unknown')}
 });

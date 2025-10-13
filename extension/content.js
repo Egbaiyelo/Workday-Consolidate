@@ -4,14 +4,13 @@
 // 
 // 
 
-//-! need a lot better error handling between cocnnections
+//-! need a lot better error handling between connections
 
 
 
+//#region 1. ADD SITE
 
-//-- 1. ADD SITE
-
-// The first functionality is adding sites to the watch list, all sites with a workday domain
+// The first functionality is adding sites to the watch list, so all sites with a workday domain
 // can be tracked and viewed anytime.
 //- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
 //  --- Also need to handle failed login
@@ -21,10 +20,10 @@ const siteURL = window.location.href;
 
 // Adds site to the watch list
 function addSite() {
+
     // Company name in format like 
     // bmo.wd3.myworkdayjobs
     const companyName = window.location.hostname.split('.')[0];
-
 
     const segments = siteURL.split('/');
     const baseURL = segments.slice(0, 5).join('/');
@@ -32,39 +31,49 @@ function addSite() {
     // Save to local
     // Redundant storage, given some may not have the app or maybe the app isnt working, it at least keeps them 
     // in local storage first
-    //- maybe use sync instead
-    chrome.storage.local.get("companySites", function (result) {
+    //- not used sync yet but might have addsites
+    chrome.storage.sync.get("companySites", function (result) {
         const companySites = result.companySites || {};
         console.log("result, companysites", result, companySites);
+
+        if (!companySites[companyName]) {
+            chrome.runtime.sendMessage({ action: "addSite", data: { companyName, url: baseURL } });
+        }
 
         // Shouldn't have duplicates but just checking
         // If the company name exists but doesnt have the same data as the baseURL
         if (companySites[companyName] && companySites[companyName] != baseURL) {
-            console.log("!duplicate");
-            console.log(companySites[companyName])
+            chrome.runtime.sendMessage({ action: "siteChange", data: { companyName, url: baseURL, oldUrl: companySites[companyName] } });
         }
+        // Update or insert
         companySites[companyName] = baseURL;
 
-        chrome.storage.local.set({ companySites }, function () {
+        chrome.storage.sync.set({ companySites }, function () {
             console.log(`Saved ${companyName}: ${baseURL}`);
         });
 
-        chrome.runtime.sendMessage({action: "addSite", data: {companyName, url: baseURL}});
-
+        // different protocol if site changes
+        // chrome.runtime.sendMessage({ action: "addSite", data: { companyName, url: baseURL } });
     });
 
     // Example full format
     // "https://bmo.wd3.myworkdayjobs.com/en-US/External/userHome"
 }
 
-addSite();
+//#endregion
 
+//#region 2. LOGIN
 
-//-- 2.LOGIN
+//- will probably have option to always signin so user never evensees the page (better)
 
+//- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
+//  --- Also need to handle failed login
+//  --- Maybe check if user ever signed in?
 //- Issue -> Cant decide if should wait for autofill and wait for user to click 
 // -(can be messy with other autocompletes I think)
 // - or put a button that does it all, probably put a button at the top to let use sign in without the form (from the utility bar)
+
+// - Issue -> Can get two forms
 function siteStatus() {
 
     const observer = new MutationObserver(() => {
@@ -78,11 +87,9 @@ function siteStatus() {
 
             const formType = document.getElementById('authViewTitle').textContent;
             if (formType == 'Sign In') {
-                console.log('sign in')
-                signIn("hellp", "word");
+                console.log('sign in');
             } else if (formType == 'Create Account') {
-                console.log('create account')
-                createAccount("hellp", "word")
+                console.log('create account');
             }
             //- Else put button in the utility bbar as said above
 
@@ -106,14 +113,13 @@ function siteStatus() {
         // alert("Login/Register form did not appear.");
     }, 5000);
 }
-// siteStatus();
 
 // Autofills Sign In info
 //! Assumes all needed elements are present 
-// If signinbutton given, it clicks it
-function signIn(email, password, submit) {
-    const emailBox = document.querySelector('[data-automation-id="email"]');
-    const passwordBox = document.querySelector('[data-automation-id="password"]');
+// If submit is true, it also submits form
+function signIn(form, email, password, submit) {
+    const emailBox = form.querySelector('[data-automation-id="email"]');
+    const passwordBox = form.querySelector('[data-automation-id="password"]');
     if (!emailBox || !passwordBox) { console.log("didnt finds"); return false };
 
     emailBox.value = email;
@@ -121,38 +127,21 @@ function signIn(email, password, submit) {
     passwordBox.value = password;
     passwordBox.dispatchEvent(new Event('input', { bubbles: true }));
 
-    // await user sign in? or ask specifically ahead of time
-    // sign in for now
-    // const signInButton = document.querySelector("[data-automation-id='signInSubmitButton']");
-    // signInButton.click();
-
-    // 
+    // If submit is wanted, click submit button
     if (submit) {
-        // console.log('------------------((((((((((signing in');
-        const signInButton = document.querySelector("[data-automation-id='click_filter']");
-        console.log(signInButton);
+        const signInButton = form.querySelector("[data-automation-id='click_filter']");
         signInButton.click();
-        //- Do for register too
-        
-
-        // signInButton.dispatchEvent(new MouseEvent('click', {
-        //     view: window,
-        //     bubbles: true,
-        //     cancelable: true,
-        //     trusted: true,
-        //     isTrusted: true
-        // }));
-
-
     }
 }
 
 // Autofills Account info
 //! Assumes all needed elements are present
-function createAccount(email, password, submit) {
-    const emailBox = document.querySelector('[data-automation-id="email"]');
-    const passwordBox = document.querySelector('[data-automation-id="password"]');
-    const verifyPasswordBox = document.querySelector('[data-automation-id="verifyPassword"]');
+// If submit is true, it also submits form
+function createAccount(form, email, password, submit) {
+    console.log("creating account")
+    const emailBox = form.querySelector('[data-automation-id="email"]');
+    const passwordBox = form.querySelector('[data-automation-id="password"]');
+    const verifyPasswordBox = form.querySelector('[data-automation-id="verifyPassword"]');
     if (!emailBox || !passwordBox) { console.log("didnt finds"); return false };
 
     emailBox.value = email;
@@ -162,18 +151,29 @@ function createAccount(email, password, submit) {
     verifyPasswordBox.value = password;
     verifyPasswordBox.dispatchEvent(new Event('input', { bubbles: true }));
 
-    const createAccountCB = document.querySelector("[data-automation-id='createAccountCheckbox']");
-    if (createAccountCB) createAccountCB.checked = true;
+    const createAccountCB = form.querySelector("[data-automation-id='createAccountCheckbox']");
+    if (createAccountCB) {
+        // console.log("aria checked", createAccountCB.getAttribute('aria-checked'));
 
-    // 
+        if (createAccountCB.getAttribute('aria-checked') === "false") {
+            console.log("we getting there")
+            createAccountCB.click();
+            createAccountCB.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+
+    // If submit is wanted, click submit button
     if (submit) {
-        const createAccountButton = document.querySelector("[data-automation-id='createAccountSubmitButton']");
+        // console.log("registering")
+        const createAccountButton = form.querySelector("[data-automation-id='click_filter']");
         createAccountButton.click();
     }
 }
 
 
-//-- 3.Add MyWorkday Button
+//#endregion 
+
+//#region 3. Add MyWorkday Button
 
 // button for home page
 // Button for sign in / sign up
@@ -196,12 +196,34 @@ function AddLinkToHome(utilityButtonBar, targetColor) {
     }
 }
 
+let username, password;
+
 const generalObserver = new MutationObserver(() => {
 
     const utilButtonBar = document.querySelector("[data-automation-id='utilityButtonBar']");
     const signInFormo = document.querySelector("[data-automation-id='signInFormo']");
 
     if (utilButtonBar) {
+
+        // Addsite if logged in, can tell by the account button with the email in it
+        const accountButton = document.querySelector("[data-automation-id='utilityButtonAccountTasksMenu']");
+
+        if (accountButton) {
+
+            // request username
+            let username;
+            chrome.storage.sync.get("username", result => username = result);
+
+            // Dont expect anything else in the accountbutton other than email
+            if (accountButton.textContent === username) {
+                addSite();
+            }
+            else {
+                //- Maybe allow multiple accounts
+                console.warn("myWorkday says: You are logged in with a different account! It cannot be monitored")
+            }
+
+        }
 
         // Given the way the page routes, better to keep checking and ensure adding the link
         const myWorkdayButton = document.querySelector('#myWorkday-button-div');
@@ -216,7 +238,6 @@ const generalObserver = new MutationObserver(() => {
                 utilButtonBar.appendChild(barDivider);
                 utilButtonBar.appendChild(myWorkdayButton);
             }
-                
 
         } else {
             // Getting the base text color for blending in
@@ -233,60 +254,65 @@ const generalObserver = new MutationObserver(() => {
 
     if (signInFormo) {
 
-        //- New flow -> user clicks sign in and can then register or login with myWorkday
-        //- maybe offer to register if not and if user logs in maybe save pass info
-        const formType = document.getElementById('authViewTitle').textContent;
-        if (formType == 'Sign In') {
-            //- onclick signin and then click button
-            // signIn("hellp", "word");
+        function HandleAccountForm() {
+            console.log("username", password, username)
+            //- New flow -> user clicks sign in and can then register or login with myWorkday
+            //- maybe offer to register if not and if user logs in maybe save pass info
+            const formType = document.getElementById('authViewTitle').textContent;
+            if (formType == 'Sign In') {
+                //- onclick signin and then click button
 
-            const signInHelper = document.querySelector('#myWorkday-signIn-helper');
-            if (!signInHelper) {
-                console.log('attempting to get creds')
+                const signInHelper = document.querySelector('#myWorkday-signIn-helper');
+                if (!signInHelper) {
 
-                let username, password;
+                    const element = createAccountHelper('Sign in with MyWorkday', () => {
+                        signIn(signInFormo, username, password, true);
+                    });
 
-                chrome.runtime.sendMessage({ action: 'getCredentials' }, (response) => {
-                    if (chrome.runtime.lastError) {
-                        console.error('Error messaging extension:', chrome.runtime.lastError.message);
-                        return;
-                    }
+                    element.id = 'myWorkday-signIn-helper';
+                    signInFormo.appendChild(element);
+                }
 
-                    console.log("I got it@@@@@@@@@@@@@@@@@@@@@@@", response)
 
-                    if (response && response.username && response.password) {
-                        console.log('got response')
-                        username = response.username;
-                        password = response.password;
-                        // signIn(response.username, response.password, true);
-                    } else {
-                        console.error('Invalid credentials received from nativeHost');
-                    }
-                });
-                
-                const element = createAccountHelper('Sign in with MyWorkday', () => {
-                    signIn(username, password, true)
-                });
+            } else if (formType == 'Create Account') {
 
-                element.id = 'myWorkday-signIn-helper';
-                // console.log('elemento', element);
-                signInFormo.appendChild(element);
+                const registerHelper = document.querySelector('#myWorkday-register-helper');
+                if (!registerHelper) {
+                    const element = createAccountHelper('Register with MyWorkday', () => {
+                        createAccount(signInFormo, username, password, true);
+                    });
+
+                    element.id = 'myWorkday-register-helper';
+                    signInFormo.appendChild(element);
+                }
             }
-
-
-        } else if (formType == 'Create Account') {
-            // createAccount("hellp", "word");
-
-            const registerHelper = document.querySelector('#myWorkday-register-helper');
-            if (!registerHelper) {
-                const element = createAccountHelper('Register with MyWorkday', () => { });
-                element.id = 'myWorkday-register-helper';
-                signInFormo.appendChild(element);
-            }
-
         }
 
+        // Ensure username and pass available
+        if (!username || !password) {
+            chrome.runtime.sendMessage({ action: 'getCredentials' }, (response) => {
+                // console.log("trying")
+                if (chrome.runtime.lastError) {
+                    console.error('Error messaging extension:', chrome.runtime.lastError.message);
+                    return;
+                }
 
+                // console.log("I got it the creds", response)
+
+                if (response && response.username && response.password) {
+                    console.log('got response')
+                    username = response.username;
+                    password = response.password;
+
+                    HandleAccountForm();
+                } else {
+                    console.error('Invalid credentials received from nativeHost');
+                    Alert("MyWorkday could not get your credentials, please fill form manually")
+                }
+            });
+        } else {
+            HandleAccountForm();
+        }
     }
 });
 
@@ -301,8 +327,8 @@ generalObserver.observe(document.body, {
 
 // returns bardivider and button element
 function createHomeLink(targetColor = 'white') {
-// =======
-// AddLinkToHome(document.querySelector("[data-automation-id='utilityButtonBar']"))
+    // =======
+    // AddLinkToHome(document.querySelector("[data-automation-id='utilityButtonBar']"))
 
 
     // Icon div and style
@@ -464,7 +490,13 @@ function createAccountHelper(helperText, onClickHandler) {
     return container;
 }
 
+//#endregion
 
+//#region Execution
+
+// addSite();
+
+//#endregion
 
 
 function uploadFile() {

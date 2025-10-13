@@ -1,0 +1,65 @@
+
+:root {
+    font-family: 'Inter', sans-serif;
+}
+
+
+
+/* Company card */
+.company-card{
+    border: .2em solid black;
+    border-radius: 1em;
+
+    /* padding: 1em; */
+    
+    display: flex;
+    flex-direction: column;
+}
+
+.company-card-header{
+
+    padding: 1em;
+
+    border-bottom: .2em solid black;
+}
+
+.company-card-element{
+    padding: 1em;
+}
+
+
+.company-card-element,
+.company-card-header > div { 
+    display: flex; 
+    gap: 0; 
+}
+
+
+
+.job-title{
+    width: 35%;
+    flex-shrink: 0;
+    display: inline-block;
+        
+}
+
+.job-req{
+    width: 20%;
+    flex-shrink: 0;
+    display: inline-block;
+        
+}
+
+.job-status{
+    width: 25%;
+    flex-shrink: 0;
+    display: inline-block;
+        
+}
+
+.date-submitted{
+    width: 20%;
+    flex-shrink: 0;
+    display: inline-block;
+        
+}
