@@ -33,6 +33,7 @@ function addSite() {
     // in local storage first
     //- not used sync yet but might have addsites
     chrome.storage.sync.get("companySites", function (result) {
+//<<<<<<< HEAD
         const companySites = result.companySites || {};
         console.log("result, companysites", result, companySites);
 
@@ -77,28 +78,35 @@ function addSite() {
     // in local storage first
     //- maybe use sync instead
     chrome.storage.local.get("companySites", function (result) {
+        ///here cutoff
+//=======
+//>>>>>>> extension-features
         const companySites = result.companySites || {};
         console.log("result, companysites", result, companySites);
+
+        if (!companySites[companyName]) {
+            chrome.runtime.sendMessage({ action: "addSite", data: { companyName, url: baseURL } });
+        }
 
         // Shouldn't have duplicates but just checking
         // If the company name exists but doesnt have the same data as the baseURL
         if (companySites[companyName] && companySites[companyName] != baseURL) {
-            console.log("!duplicate");
-            console.log(companySites[companyName])
+            chrome.runtime.sendMessage({ action: "siteChange", data: { companyName, url: baseURL, oldUrl: companySites[companyName] } });
         }
+        // Update or insert
         companySites[companyName] = baseURL;
 
-        chrome.storage.local.set({ companySites }, function () {
+        chrome.storage.sync.set({ companySites }, function () {
             console.log(`Saved ${companyName}: ${baseURL}`);
         });
 
-        chrome.runtime.sendMessage({action: "addSite", data: {companyName, url: baseURL}});
-
+        // different protocol if site changes
+        // chrome.runtime.sendMessage({ action: "addSite", data: { companyName, url: baseURL } });
     });
 
     // Example full format
     // "https://bmo.wd3.myworkdayjobs.com/en-US/External/userHome"
-}
+//>>>>>>>>>>>>>>add<<<<<<<<<<<<<<<}
 // siteStatus();
 
 // Autofills Sign In info
@@ -136,13 +144,15 @@ function signIn(email, password, submit) {
         //     isTrusted: true
         // }));
 
-addSite();
+//#endregion
 
-    }
-}
+//#region 2. LOGIN
 
-//-- 2.LOGIN
+//- will probably have option to always signin so user never evensees the page (better)
 
+//- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
+//  --- Also need to handle failed login
+//  --- Maybe check if user ever signed in?
 //- Issue -> Cant decide if should wait for autofill and wait for user to click 
 // -(can be messy with other autocompletes I think)
 // - or put a button that does it all, probably put a button at the top to let use sign in without the form (from the utility bar)
@@ -268,13 +278,7 @@ function AddLinkToHome(utilityButtonBar, targetColor) {
         utilityButtonBar.insertBefore(barDivider, null);
         utilityButtonBar.insertBefore(targetButtonDiv, null);
     }
-});
-
-//- maybe observe the button bar instead?
-generalObserver.observe(document.body, {
-    childList: true,
-    subtree: true
-});
+}
 
 let username, password;
 
