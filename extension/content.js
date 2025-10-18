@@ -33,7 +33,6 @@ function addSite() {
     // in local storage first
     //- not used sync yet but might have addsites
     chrome.storage.sync.get("companySites", function (result) {
-//<<<<<<< HEAD
         const companySites = result.companySites || {};
         console.log("result, companysites", result, companySites);
 
@@ -61,88 +60,49 @@ function addSite() {
     // "https://bmo.wd3.myworkdayjobs.com/en-US/External/userHome"
 }
 
-//#endregion
-
-//#region 2. LOGIN
-
-//- will probably have option to always signin so user never evensees the page (better)
-
-//- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
-//  --- Also need to handle failed login
-//  --- Maybe check if user ever signed in?
-    const segments = siteURL.split('/');
-    const baseURL = segments.slice(0, 5).join('/');
-
-    // Save to local
-    // Redundant storage, given some may not have the app or maybe the app isnt working, it at least keeps them 
-    // in local storage first
-    //- maybe use sync instead
-    chrome.storage.local.get("companySites", function (result) {
-        ///here cutoff
-//=======
-//>>>>>>> extension-features
-        const companySites = result.companySites || {};
-        console.log("result, companysites", result, companySites);
-
-        if (!companySites[companyName]) {
-            chrome.runtime.sendMessage({ action: "addSite", data: { companyName, url: baseURL } });
-        }
-
-        // Shouldn't have duplicates but just checking
-        // If the company name exists but doesnt have the same data as the baseURL
-        if (companySites[companyName] && companySites[companyName] != baseURL) {
-            chrome.runtime.sendMessage({ action: "siteChange", data: { companyName, url: baseURL, oldUrl: companySites[companyName] } });
-        }
-        // Update or insert
-        companySites[companyName] = baseURL;
-
-        chrome.storage.sync.set({ companySites }, function () {
-            console.log(`Saved ${companyName}: ${baseURL}`);
-        });
-
-        // different protocol if site changes
-        // chrome.runtime.sendMessage({ action: "addSite", data: { companyName, url: baseURL } });
-    });
-
-    // Example full format
-    // "https://bmo.wd3.myworkdayjobs.com/en-US/External/userHome"
-//>>>>>>>>>>>>>>add<<<<<<<<<<<<<<<}
 // siteStatus();
 
 // Autofills Sign In info
 //! Assumes all needed elements are present 
 // If signinbutton given, it clicks it
-function signIn(email, password, submit) {
-    const emailBox = document.querySelector('[data-automation-id="email"]');
-    const passwordBox = document.querySelector('[data-automation-id="password"]');
-    if (!emailBox || !passwordBox) { console.log("didnt finds"); return false };
 
-    emailBox.value = email;
-    emailBox.dispatchEvent(new Event('input', { bubbles: true }));
-    passwordBox.value = password;
-    passwordBox.dispatchEvent(new Event('input', { bubbles: true }));
+// >>>>>>>>>>>>>>>
 
-    // await user sign in? or ask specifically ahead of time
-    // sign in for now
-    // const signInButton = document.querySelector("[data-automation-id='signInSubmitButton']");
-    // signInButton.click();
+// function signIn(email, password, submit) {
+//     const emailBox = document.querySelector('[data-automation-id="email"]');
+//     const passwordBox = document.querySelector('[data-automation-id="password"]');
+//     if (!emailBox || !passwordBox) { console.log("didnt finds"); return false };
 
-    // 
-    if (submit) {
-        // console.log('------------------((((((((((signing in');
-        const signInButton = document.querySelector("[data-automation-id='click_filter']");
-        console.log(signInButton);
-        signInButton.click();
-        //- Do for register too
+//     emailBox.value = email;
+//     emailBox.dispatchEvent(new Event('input', { bubbles: true }));
+//     passwordBox.value = password;
+//     passwordBox.dispatchEvent(new Event('input', { bubbles: true }));
+
+//     // await user sign in? or ask specifically ahead of time
+//     // sign in for now
+//     // const signInButton = document.querySelector("[data-automation-id='signInSubmitButton']");
+//     // signInButton.click();
+
+//     // 
+//     if (submit) {
+//         // console.log('------------------((((((((((signing in');
+//         const signInButton = document.querySelector("[data-automation-id='click_filter']");
+//         console.log(signInButton);
+//         signInButton.click();
+//         //- Do for register too
         
 
-        // signInButton.dispatchEvent(new MouseEvent('click', {
-        //     view: window,
-        //     bubbles: true,
-        //     cancelable: true,
-        //     trusted: true,
-        //     isTrusted: true
-        // }));
+//         // signInButton.dispatchEvent(new MouseEvent('click', {
+//         //     view: window,
+//         //     bubbles: true,
+//         //     cancelable: true,
+//         //     trusted: true,
+//         //     isTrusted: true
+//         // }));
+//     }
+// }
+
+// <<<<<<<<<<<<<<<
 
 //#endregion
 
