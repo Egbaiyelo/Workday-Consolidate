@@ -12,9 +12,6 @@
 
 // The first functionality is adding sites to the watch list, so all sites with a workday domain
 // can be tracked and viewed anytime.
-//- Issue -> User might not have made account on the site yet so I need to confirm that before trying to login
-//  --- Also need to handle failed login
-//  --- Maybe check if user ever signed in?
 
 const siteURL = window.location.href;
 

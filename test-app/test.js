@@ -17,7 +17,6 @@ function readData() {
         console.error('Error reading or parsing data.json:', err);
     }
 }
-
 const DATA = readData();
 const SAMPLE_SCRAPE = [{
     site: "mvidia", data: [{
